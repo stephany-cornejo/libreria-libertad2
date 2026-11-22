@@ -1,0 +1,70 @@
+
+.usuarios-modulo {
+  width: min(100%, 1050px);
+  margin: 24px auto;
+  font-family: Arial, sans-serif;
+}
+
+.usuarios-formulario {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 32px;
+}
+
+.usuarios-formulario h3,
+.usuarios-acciones {
+  grid-column: 1 / -1;
+}
+
+.usuarios-formulario label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.usuarios-formulario input,
+.usuarios-formulario select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.usuarios-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.usuarios-modulo button {
+  padding: 9px 14px;
+  cursor: pointer;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+}
+
+.usuarios-tabla-contenedor {
+  overflow-x: auto;
+}
+
+.usuarios-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.usuarios-tabla th,
+.usuarios-tabla td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.usuarios-error {
+  color: #b91c1c;
+}
+
+.usuarios-exito {
+  color: #166534;
+}
