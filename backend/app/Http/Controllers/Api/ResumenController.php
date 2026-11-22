@@ -4,32 +4,22 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Producto;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ResumenController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(): JsonResponse
     {
-        $resumen = [
-            'totalProductos' => Producto::count(),
-            'productosConStockBajo' => Producto::whereColumn('stock', '<=', 'stock_minimo')->count(),
-        ];
+        $totales = Producto::query()
+            ->where('stock', '>', 0)
+            ->selectRaw('COUNT(*) AS sku, COALESCE(SUM(stock), 0) AS unidades, COALESCE(SUM(precio * stock), 0) AS valor')
+            ->toBase()
+            ->first();
 
-        if ($request->user()->rol->nombre === 'Administrador') {
-            $usuarios = User::query()
-                ->selectRaw('estado, COUNT(*) as cantidad')
-                ->groupBy('estado')
-                ->pluck('cantidad', 'estado');
-
-            $resumen += [
-                'totalUsuarios' => $usuarios->sum(),
-                'usuariosActivos' => (int) ($usuarios['activo'] ?? 0),
-                'usuariosInactivos' => (int) ($usuarios['inactivo'] ?? 0),
-            ];
-        }
-
-        return response()->json($resumen);
+        return response()->json([
+            'skuDisponibles' => (int) $totales->sku,
+            'unidadesDisponibles' => (int) $totales->unidades,
+            'valorInventario' => (string) $totales->valor,
+        ]);
     }
 }

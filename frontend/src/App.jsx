@@ -172,12 +172,16 @@ function PanelLayout({ perfil, onLogout }) {
   );
 }
 
+const formatoCantidad = new Intl.NumberFormat('es-SV');
+const formatoInventario = new Intl.NumberFormat('es-SV', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 const indicadores = [
-  ['totalProductos', 'Productos registrados'],
-  ['productosConStockBajo', 'Productos en el mínimo o por debajo'],
-  ['totalUsuarios', 'Usuarios registrados'],
-  ['usuariosActivos', 'Usuarios activos'],
-  ['usuariosInactivos', 'Usuarios inactivos'],
+  ['skuDisponibles', 'Stock total disponible (SKU)', formatoCantidad],
+  ['unidadesDisponibles', 'Unidades totales disponibles', formatoCantidad],
+  ['valorInventario', 'Valor total en inventario', formatoInventario],
 ];
 
 function Dashboard() {
@@ -198,15 +202,15 @@ function Dashboard() {
 
   return (
     <section>
-      <h1>Resumen general del sistema</h1>
+      <h1>Panel de Control</h1>
       {error && <p role="alert">{error}</p>}
       {!resumen && !error && <p role="status">Cargando indicadores…</p>}
       {resumen && (
         <div style={estilos.indicadores}>
-          {indicadores.filter(([clave]) => clave in resumen).map(([clave, titulo]) => (
+          {indicadores.map(([clave, titulo, formato]) => (
             <article key={clave} style={estilos.tarjeta}>
               <h3>{titulo}</h3>
-              <strong style={estilos.valorIndicador}>{resumen[clave]}</strong>
+              <strong style={estilos.valorIndicador}>{formato.format(resumen[clave])}</strong>
             </article>
           ))}
         </div>
