@@ -187,46 +187,48 @@ function Dashboard() {
   }, []);
 
   return (
-    <section>
+    <section className="panel-control">
       <h1>Panel de Control</h1>
-      {error && <p role="alert">{error}</p>}
-      {!resumen && !error && <p role="status">Cargando indicadores…</p>}
+      {error && <p role="alert" className="aviso aviso-error">{error}</p>}
+      {!resumen && !error && <p role="status" className="aviso">Cargando indicadores…</p>}
       {resumen && (
         <>
-          <div style={estilos.indicadores}>
+          <dl className="panel-indicadores">
             {indicadores.map(([clave, titulo, formato]) => (
-              <article key={clave} style={estilos.tarjeta}>
-                <h3>{titulo}</h3>
-                <strong style={estilos.valorIndicador}>{formato.format(resumen[clave])}</strong>
-              </article>
+              <div key={clave} className="panel-indicador">
+                <dt>{titulo}</dt>
+                <dd>{formato.format(resumen[clave])}</dd>
+              </div>
             ))}
-          </div>
+          </dl>
 
-          <section aria-labelledby="titulo-categorias">
+          <section className="panel-seccion" aria-labelledby="titulo-categorias">
             <h2 id="titulo-categorias">Categorías</h2>
             {resumen.categorias.length ? (
-              <ul style={estilos.enlacesCategorias}>
+              <ul className="panel-categorias">
                 {resumen.categorias.map(({ id, nombre }) => (
                   <li key={id}><Link to={`/productos?categoria=${id}`}>{nombre}</Link></li>
                 ))}
               </ul>
-            ) : <p>Aún no hay categorías registradas.</p>}
+            ) : <p className="panel-vacio">Aún no hay categorías registradas.</p>}
           </section>
 
-          <section aria-labelledby="titulo-destacados">
+          <section className="panel-seccion" aria-labelledby="titulo-destacados">
             <h2 id="titulo-destacados">Destacados</h2>
             {resumen.destacados.length ? (
-              <div style={estilos.indicadores}>
+              <ul className="panel-destacados">
                 {resumen.destacados.map(({ id, codigo, nombre, precio, stock }) => (
-                  <article key={id} style={estilos.tarjeta}>
-                    <h3>{nombre}</h3>
-                    <span>{codigo}</span>
-                    <strong>{formatoInventario.format(precio)}</strong>
-                    <span>Unidades disponibles: {formatoCantidad.format(stock)}</span>
-                  </article>
+                  <li key={id} className="panel-destacado">
+                    <div className="panel-producto">
+                      <strong>{nombre}</strong>
+                      <span className="panel-codigo">{codigo}</span>
+                    </div>
+                    <strong className="panel-precio">{formatoInventario.format(precio)}</strong>
+                    <span className="panel-stock">{formatoCantidad.format(stock)} disponibles</span>
+                  </li>
                 ))}
-              </div>
-            ) : <p>Aún no hay productos con existencias.</p>}
+              </ul>
+            ) : <p className="panel-vacio">Aún no hay productos con existencias.</p>}
           </section>
         </>
       )}
@@ -356,39 +358,5 @@ function App() {
     </BrowserRouter>
   );
 }
-
-// ESTILOS GENERALES
-const estilos = {
-  enlacesCategorias: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 16,
-    listStyle: 'none',
-    padding: 0,
-  },
-
-  indicadores: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: 20,
-    marginTop: 24,
-  },
-
-  tarjeta: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-    padding: 24,
-    background: '#fff',
-    border: '1px solid #ddd',
-    borderRadius: 12,
-    color: '#222',
-  },
-
-  valorIndicador: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-};
 
 export default App;

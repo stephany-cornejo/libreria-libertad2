@@ -67,3 +67,53 @@
   .sesion span { display: none; }
   .login-formulario, .login-marca { padding: 1.25rem; }
 }
+
+.panel-control { display: grid; gap: 1.15rem; }
+.panel-indicadores { display: grid; gap: .85rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.panel-indicador, .panel-seccion {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.panel-indicador { padding: 1.1rem 1.2rem; border-top: 3px solid var(--navy); }
+.panel-indicador dt { color: var(--muted); font-weight: 600; }
+.panel-indicador dd {
+  margin: .3rem 0 0;
+  font-size: clamp(1.35rem, 2.7vw, 2.15rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.panel-indicadores, .panel-destacados, .panel-categorias { margin: 0; padding: 0; }
+.panel-seccion h2 { padding: .85rem 1.15rem; border-bottom: 1px solid var(--line); }
+.panel-vacio { padding: .85rem 1.15rem; color: var(--muted); }
+.panel-categorias { display: flex; flex-wrap: wrap; gap: .5rem; padding: .9rem 1.15rem; list-style: none; }
+.panel-categorias a {
+  display: block;
+  padding: .35rem .65rem;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--subtle);
+  text-decoration: none;
+}
+.panel-categorias a:hover { border-color: #a7b4cb; background: #eef3fc; text-decoration: underline; }
+.panel-destacados { list-style: none; }
+.panel-destacado {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(6rem, auto) minmax(7rem, auto);
+  gap: .4rem 1rem;
+  align-items: center;
+  padding: .7rem 1.15rem;
+  border-bottom: 1px solid var(--line);
+}
+.panel-destacado:last-child { border-bottom: 0; }
+.panel-producto { display: grid; gap: .12rem; overflow-wrap: anywhere; }
+.panel-codigo { color: var(--muted); font-size: .83rem; }
+.panel-precio { font-variant-numeric: tabular-nums; text-align: end; }
+.panel-stock { justify-self: end; padding: .18rem .55rem; border-radius: 4px; background: var(--success-bg); color: var(--success); font-size: .86rem; }
+
+@media (max-width: 680px) {
+  .panel-indicadores { grid-template-columns: 1fr; }
+  .panel-destacado { grid-template-columns: minmax(0, 1fr) auto; }
+  .panel-stock { grid-column: 2; }
+}
