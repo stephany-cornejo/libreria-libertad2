@@ -1,5 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400..700&display=swap");
+
 :root {
-  font: 400 15px/1.5 "Segoe UI", system-ui, sans-serif;
+  font: 400 15px/1.5 "Josefin Sans", system-ui, sans-serif;
   color: #17213b;
   background: #edf0f5;
   --navy: #192446;
