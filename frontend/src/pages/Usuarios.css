@@ -55,3 +55,11 @@
 
 .usuarios-exito { border-color: #c8e5d4; background: var(--success-bg); color: var(--success); }
 .catalogo-filtro { display: flex; align-items: baseline; flex-wrap: wrap; gap: .45rem 1rem; color: var(--muted); }
+
+.catalogo-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem 1rem;
+}

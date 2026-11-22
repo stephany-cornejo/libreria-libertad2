@@ -49,6 +49,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
   const [registros, setRegistros] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [editando, setEditando] = useState(null);
+  const [creando, setCreando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const registrosVisibles = categoriaId
@@ -79,11 +80,20 @@ export default function Catalogo({ recurso, puedeEditar }) {
   }, [url, esProducto, puedeEditar]);
 
   function cancelar() {
+    setCreando(false);
     setEditando(null);
     setFormulario(formularioNuevo());
   }
 
+  function nuevo() {
+    cancelar();
+    setError('');
+    setMensaje('');
+    setCreando(true);
+  }
+
   function editar(registro) {
+    setCreando(false);
     setError('');
     setMensaje('');
     setEditando(registro.id);
@@ -132,7 +142,20 @@ export default function Catalogo({ recurso, puedeEditar }) {
 
   return (
     <section className="usuarios-modulo">
-      <h1>{titulo}</h1>
+      <header className="catalogo-cabecera">
+        <h1>{titulo}</h1>
+        {puedeEditar && (
+          <button
+            type="button"
+            className="accion-principal"
+            disabled={cargando || guardando || creando}
+            aria-expanded={creando}
+            onClick={nuevo}
+          >
+            + Nuevo
+          </button>
+        )}
+      </header>
       {categoriaId && (
         <p className="aviso catalogo-filtro">
           {nombreCategoria ? `Categoría: ${nombreCategoria}` : 'Filtro por categoría aplicado.'}
@@ -143,7 +166,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
       {mensaje && <p role="status" className="aviso usuarios-exito">{mensaje}</p>}
       {cargando && <p role="status" className="aviso">Cargando catálogo…</p>}
 
-      {puedeEditar && !cargando && (
+      {puedeEditar && !cargando && (creando || editando !== null) && (
         <form className="usuarios-formulario" onSubmit={guardar}>
           <h2>{editando ? 'Editar' : esProducto ? 'Nuevo' : 'Nueva'} {entidad}</h2>
           {campos.map(({ nombre, etiqueta, ...atributos }) => {
@@ -176,7 +199,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
             <button type="submit" className="accion-principal" disabled={guardando || (esProducto && categorias.length === 0)}>
               {guardando ? 'Procesando…' : 'Guardar'}
             </button>
-            {editando && <button type="button" disabled={guardando} onClick={cancelar}>Cancelar</button>}
+            <button type="button" disabled={guardando} onClick={cancelar}>Cancelar</button>
           </div>
         </form>
       )}
