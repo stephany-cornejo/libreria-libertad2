@@ -12,11 +12,12 @@ const formularioVacio = {
   estado: 'activo',
 };
 
-export default function Usuarios() {
+export default function Usuarios({ alEditarUsuario }) {
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]);
   const [formulario, setFormulario] = useState({ ...formularioVacio });
   const [editando, setEditando] = useState(null);
+  const [cambiandoPassword, setCambiandoPassword] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
@@ -48,6 +49,7 @@ export default function Usuarios() {
 
   function editar(usuario) {
     setEditando(usuario.id);
+    setCambiandoPassword(false);
     setFormulario({
       name: usuario.name,
       usuario: usuario.usuario,
@@ -63,6 +65,7 @@ export default function Usuarios() {
 
   function cancelar() {
     setEditando(null);
+    setCambiandoPassword(false);
     setFormulario({ ...formularioVacio });
     setError('');
   }
@@ -79,18 +82,20 @@ export default function Usuarios() {
       id_rol: Number(formulario.id_rol),
     };
 
-    if (editando && !datos.password) {
+    if (editando !== null && !cambiandoPassword) {
       delete datos.password;
     }
 
     try {
-      if (editando) {
-        await api.put(`/api/usuarios/${editando}`, datos);
+      if (editando !== null) {
+        const { data } = await api.put(`/api/usuarios/${editando}`, datos);
+        const usuarioActualizado = data.usuario;
+        setUsuarios((lista) => lista.map((item) => item.id === usuarioActualizado.id ? usuarioActualizado : item));
+        alEditarUsuario(usuarioActualizado);
       } else {
-        await api.post('/api/usuarios', datos);
+        const { data } = await api.post('/api/usuarios', datos);
+        setUsuarios((lista) => [data.usuario, ...lista]);
       }
-
-      await cargarDatos();
       cancelar();
       setMensaje('Usuario guardado correctamente.');
     } catch (err) {
@@ -183,17 +188,35 @@ export default function Usuarios() {
           />
         </label>
 
-        <label>
-          {editando ? 'Nueva contraseña (opcional)' : 'Contraseña*'}
-          <input
-            type="password"
-            name="password"
-            value={formulario.password}
-            onChange={cambiarCampo}
-            minLength={8}
-            required={!editando}
-          />
-        </label>
+        {editando !== null && (
+          <div>
+            <button
+              type="button"
+              aria-expanded={cambiandoPassword}
+              disabled={guardando}
+              onClick={() => {
+                setCambiandoPassword(!cambiandoPassword);
+                setFormulario((datos) => ({ ...datos, password: '' }));
+              }}
+            >
+              {cambiandoPassword ? 'Conservar contraseña' : 'Cambiar contraseña'}
+            </button>
+          </div>
+        )}
+        {(editando === null || cambiandoPassword) && (
+          <label>
+            {editando === null ? 'Contraseña*' : 'Nueva contraseña*'}
+            <input
+              type="password"
+              name="password"
+              autoComplete="new-password"
+              value={formulario.password}
+              onChange={cambiarCampo}
+              minLength={8}
+              required
+            />
+          </label>
+        )}
 
         <label>
           Rol

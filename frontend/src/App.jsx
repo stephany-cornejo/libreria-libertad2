@@ -264,6 +264,12 @@ function App() {
   const [perfil, setPerfil] = useState(null);
   const [verificando, setVerificando] = useState(true);
 
+  function actualizarPerfil(usuario) {
+    setPerfil((actual) => actual?.id === usuario.id
+      ? { ...actual, nombre: usuario.name, usuario: usuario.usuario }
+      : actual);
+  }
+
   useEffect(() => {
     api.get('/api/perfil')
       .then((respuesta) => {
@@ -356,7 +362,7 @@ function App() {
             path="/usuarios"
             element={
               perfil?.rol === 'Administrador' ? (
-                <Usuarios />
+                <Usuarios alEditarUsuario={actualizarPerfil} />
               ) : (
                 <Navigate to="/dashboard" replace />
               )

@@ -50,7 +50,6 @@
   padding: .35rem .75rem 1rem;
 }
 .navegacion a {
-  border-inline-start: 3px solid transparent;
   border-radius: 6px;
   padding: .63rem .68rem;
   color: #d1daf0;
@@ -59,7 +58,6 @@
 }
 .navegacion a:hover { background: var(--navy-hover); color: #fff; }
 .navegacion a[aria-current="page"] {
-  border-inline-start-color: var(--acento-menu);
   background: #233f50;
   color: #c4f3e9;
 }
