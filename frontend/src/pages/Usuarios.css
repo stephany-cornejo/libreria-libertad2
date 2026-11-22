@@ -76,3 +76,8 @@
 }
 .catalogo-dialogo::backdrop { background: #19244680; }
 .catalogo-dialogo .usuarios-formulario { border: 0; padding: 1.25rem; }
+
+.catalogo-confirmacion { display: grid; gap: .75rem; padding: 1.25rem; }
+.catalogo-confirmacion-acciones { display: flex; flex-wrap: wrap; justify-content: end; gap: .5rem; }
+.accion-eliminar { border-color: var(--danger); background: var(--danger); color: #fff; }
+.accion-eliminar:hover:not(:disabled) { border-color: #762337; background: #762337; }

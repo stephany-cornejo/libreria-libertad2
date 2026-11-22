@@ -78,6 +78,8 @@ export default function Catalogo({ recurso, puedeEditar }) {
   const [creando, setCreando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [porEliminar, setPorEliminar] = useState(null);
+  const [errorEliminar, setErrorEliminar] = useState('');
   const registrosVisibles = categoriaId
     ? registros.filter(({ categoria_id }) => String(categoria_id) === categoriaId)
     : registros;
@@ -151,19 +153,24 @@ export default function Catalogo({ recurso, puedeEditar }) {
     }
   }
 
-  async function eliminar(registro) {
-    if (!window.confirm(`¿Eliminar «${registro.nombre}»?`)) return;
+  function confirmarEliminacion(registro) {
+    setErrorEliminar('');
+    setMensaje('');
+    setPorEliminar(registro);
+  }
+
+  async function eliminar() {
+    if (!porEliminar || guardando) return;
 
     setGuardando(true);
-    setError('');
-    setMensaje('');
+    setErrorEliminar('');
     try {
-      await api.delete(`${url}/${registro.id}`);
-      setRegistros((lista) => lista.filter(({ id }) => id !== registro.id));
-      if (editando === registro.id) cancelar();
+      await api.delete(`${url}/${porEliminar.id}`);
+      setRegistros((lista) => lista.filter(({ id }) => id !== porEliminar.id));
+      setPorEliminar(null);
       setMensaje('Registro eliminado.');
     } catch (fallo) {
-      setError(detalleError(fallo, 'No se pudo eliminar el registro.'));
+      setErrorEliminar(detalleError(fallo, 'No se pudo eliminar el registro.'));
     } finally {
       setGuardando(false);
     }
@@ -245,6 +252,33 @@ export default function Catalogo({ recurso, puedeEditar }) {
         </DialogoCatalogo>
       )}
 
+      {porEliminar && (
+        <DialogoCatalogo
+          tituloId="catalogo-eliminar-titulo"
+          descripcionId="catalogo-eliminar-aviso"
+          guardando={guardando}
+          alCancelar={() => setPorEliminar(null)}
+          confirmacion
+        >
+          <div className="catalogo-confirmacion">
+            <h2 id="catalogo-eliminar-titulo">
+              {esProducto
+                ? '¿Está seguro de que quiere eliminar este producto?'
+                : '¿Está seguro de que quiere eliminar esta categoría?'}
+            </h2>
+            <p><strong>{porEliminar.nombre}</strong></p>
+            <p id="catalogo-eliminar-aviso">Esta acción no se puede deshacer.</p>
+            {errorEliminar && <p role="alert" className="aviso aviso-error">{errorEliminar}</p>}
+            <div className="catalogo-confirmacion-acciones">
+              <button type="button" disabled={guardando} onClick={() => setPorEliminar(null)}>Cancelar</button>
+              <button type="button" className="accion-eliminar" disabled={guardando} onClick={eliminar}>
+                {guardando ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </DialogoCatalogo>
+      )}
+
       {!cargando && registrosVisibles.length === 0 && !error && (
         <p className="aviso">{categoriaId ? 'No hay productos en esta categoría.' : 'No hay registros.'}</p>
       )}
@@ -280,7 +314,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
                     <td>
                       <div className="tabla-acciones">
                         <button type="button" disabled={guardando} onClick={() => editar(registro)}>Editar</button>
-                        <button type="button" className="accion-peligro" disabled={guardando} onClick={() => eliminar(registro)}>Eliminar</button>
+                        <button type="button" className="accion-peligro" disabled={guardando} onClick={() => confirmarEliminacion(registro)}>Eliminar</button>
                       </div>
                     </td>
                   )}
