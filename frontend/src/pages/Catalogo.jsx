@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import './Usuarios.css';
@@ -32,6 +32,32 @@ function detalleError(error, mensaje) {
     : datos?.mensaje || datos?.message || mensaje;
 }
 
+function DialogoCatalogo({ children, tituloId, descripcionId, guardando, alCancelar, confirmacion = false }) {
+  const dialogo = useRef(null);
+
+  useLayoutEffect(() => {
+    const elemento = dialogo.current;
+    elemento.showModal();
+    return () => elemento.close();
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogo}
+      className="catalogo-dialogo"
+      role={confirmacion ? 'alertdialog' : undefined}
+      aria-labelledby={tituloId}
+      aria-describedby={descripcionId}
+      onCancel={(evento) => {
+        evento.preventDefault();
+        if (!guardando) alCancelar();
+      }}
+    >
+      {children}
+    </dialog>
+  );
+}
+
 export default function Catalogo({ recurso, puedeEditar }) {
   const [parametros] = useSearchParams();
   const esProducto = recurso === 'productos';
@@ -58,6 +84,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
   const nombreCategoria = registrosVisibles[0]?.categoria?.nombre
     ?? categorias.find(({ id }) => String(id) === categoriaId)?.nombre;
   const [error, setError] = useState('');
+  const [errorFormulario, setErrorFormulario] = useState('');
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
@@ -82,6 +109,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
   function cancelar() {
     setCreando(false);
     setEditando(null);
+    setErrorFormulario('');
     setFormulario(formularioNuevo());
   }
 
@@ -94,6 +122,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
 
   function editar(registro) {
     setCreando(false);
+    setErrorFormulario('');
     setError('');
     setMensaje('');
     setEditando(registro.id);
@@ -103,7 +132,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
   async function guardar(evento) {
     evento.preventDefault();
     setGuardando(true);
-    setError('');
+    setErrorFormulario('');
     setMensaje('');
 
     try {
@@ -116,7 +145,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
       cancelar();
       setMensaje('Registro guardado.');
     } catch (fallo) {
-      setError(detalleError(fallo, 'No se pudo guardar el registro.'));
+      setErrorFormulario(detalleError(fallo, 'No se pudo guardar el registro.'));
     } finally {
       setGuardando(false);
     }
@@ -139,6 +168,45 @@ export default function Catalogo({ recurso, puedeEditar }) {
       setGuardando(false);
     }
   }
+
+  const formularioCatalogo = (
+    <form className="usuarios-formulario" onSubmit={guardar}>
+      <h2 id="catalogo-formulario-titulo">{editando ? 'Editar' : esProducto ? 'Nuevo' : 'Nueva'} {entidad}</h2>
+      {errorFormulario && <p role="alert" className="aviso aviso-error">{errorFormulario}</p>}
+      {campos.map(({ nombre, etiqueta, ...atributos }) => {
+        const props = {
+          name: nombre,
+          value: formulario[nombre],
+          disabled: guardando,
+          onChange: (evento) => {
+            const { value } = evento.target;
+            setFormulario((datos) => ({ ...datos, [nombre]: value }));
+          },
+        };
+
+        return (
+          <label key={nombre}>
+            {etiqueta}
+            {nombre === 'categoria_id' ? (
+              <select {...props} {...atributos}>
+                <option value="">Seleccionar categoría</option>
+                {categorias.map(({ id, nombre: opcion }) => <option key={id} value={id}>{opcion}</option>)}
+              </select>
+            ) : (
+              <input {...props} {...atributos} />
+            )}
+          </label>
+        );
+      })}
+      {esProducto && categorias.length === 0 && <p>Crea una categoría para registrar productos.</p>}
+      <div className="usuarios-acciones">
+        <button type="submit" className="accion-principal" disabled={guardando || (esProducto && categorias.length === 0)}>
+          {guardando ? 'Procesando…' : 'Guardar'}
+        </button>
+        <button type="button" disabled={guardando} onClick={cancelar}>Cancelar</button>
+      </div>
+    </form>
+  );
 
   return (
     <section className="usuarios-modulo">
@@ -166,42 +234,15 @@ export default function Catalogo({ recurso, puedeEditar }) {
       {mensaje && <p role="status" className="aviso usuarios-exito">{mensaje}</p>}
       {cargando && <p role="status" className="aviso">Cargando catálogo…</p>}
 
-      {puedeEditar && !cargando && (creando || editando !== null) && (
-        <form className="usuarios-formulario" onSubmit={guardar}>
-          <h2>{editando ? 'Editar' : esProducto ? 'Nuevo' : 'Nueva'} {entidad}</h2>
-          {campos.map(({ nombre, etiqueta, ...atributos }) => {
-            const props = {
-              name: nombre,
-              value: formulario[nombre],
-              disabled: guardando,
-              onChange: (evento) => {
-                const { value } = evento.target;
-                setFormulario((datos) => ({ ...datos, [nombre]: value }));
-              },
-            };
-
-            return (
-              <label key={nombre}>
-                {etiqueta}
-                {nombre === 'categoria_id' ? (
-                  <select {...props} {...atributos}>
-                    <option value="">Seleccionar categoría</option>
-                    {categorias.map(({ id, nombre: opcion }) => <option key={id} value={id}>{opcion}</option>)}
-                  </select>
-                ) : (
-                  <input {...props} {...atributos} />
-                )}
-              </label>
-            );
-          })}
-          {esProducto && categorias.length === 0 && <p>Crea una categoría para registrar productos.</p>}
-          <div className="usuarios-acciones">
-            <button type="submit" className="accion-principal" disabled={guardando || (esProducto && categorias.length === 0)}>
-              {guardando ? 'Procesando…' : 'Guardar'}
-            </button>
-            <button type="button" disabled={guardando} onClick={cancelar}>Cancelar</button>
-          </div>
-        </form>
+      {puedeEditar && !cargando && creando && formularioCatalogo}
+      {puedeEditar && editando !== null && (
+        <DialogoCatalogo
+          tituloId="catalogo-formulario-titulo"
+          guardando={guardando}
+          alCancelar={cancelar}
+        >
+          {formularioCatalogo}
+        </DialogoCatalogo>
       )}
 
       {!cargando && registrosVisibles.length === 0 && !error && (
