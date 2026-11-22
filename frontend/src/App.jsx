@@ -12,12 +12,11 @@ import {
 
 import api from './services/api';
 import Usuarios from './pages/Usuarios';
-import Catalogo from './pages/Catalogo';
 
 // Módulos del sistema
 const modulos = [
-  { nombre: 'Productos', ruta: '/productos', disponible: true },
-  { nombre: 'Categorías', ruta: '/categorias', disponible: true, admin: true },
+  { nombre: 'Productos', ruta: '/productos', disponible: false },
+  { nombre: 'Categorías', ruta: '/categorias', disponible: false, admin: true },
   { nombre: 'Proveedores', ruta: '/proveedores', disponible: false, admin: true },
   { nombre: 'Usuarios', ruta: '/usuarios', disponible: true, admin: true },
   { nombre: 'Movimientos', ruta: '/movimientos', disponible: false },
@@ -186,34 +185,39 @@ function PanelLayout({ perfil, onLogout }) {
 }
 
 const indicadores = [
-  ['totalProductos', 'Productos registrados'],
-  ['productosConStockBajo', 'Productos en el mínimo o por debajo'],
   ['totalUsuarios', 'Usuarios registrados'],
   ['usuariosActivos', 'Usuarios activos'],
   ['usuariosInactivos', 'Usuarios inactivos'],
 ];
 
-function Dashboard() {
+function Dashboard({ perfil }) {
   const [resumen, setResumen] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (perfil.rol !== 'Administrador') return;
+
     const controlador = new AbortController();
 
-    api.get('/api/resumen', { signal: controlador.signal })
-      .then(({ data }) => setResumen(data))
+    api.get('/api/usuarios', { signal: controlador.signal })
+      .then(({ data }) => setResumen({
+        totalUsuarios: data.length,
+        usuariosActivos: data.filter(({ estado }) => estado === 'activo').length,
+        usuariosInactivos: data.filter(({ estado }) => estado === 'inactivo').length,
+      }))
       .catch(() => {
         if (!controlador.signal.aborted) setError('No se pudieron cargar los indicadores.');
       });
 
     return () => controlador.abort();
-  }, []);
+  }, [perfil.rol]);
 
   return (
     <section>
       <h1>Resumen general del sistema</h1>
       {error && <p role="alert">{error}</p>}
-      {!resumen && !error && <p role="status">Cargando indicadores…</p>}
+      {perfil.rol === 'Administrador' && !resumen && !error && <p role="status">Cargando indicadores…</p>}
+      {perfil.rol !== 'Administrador' && <p>Los indicadores de inventario aún no están disponibles.</p>}
       {resumen && (
         <div style={estilos.indicadores}>
           {indicadores.filter(([clave]) => clave in resumen).map(([clave, titulo]) => (
@@ -288,20 +292,7 @@ function App() {
           {/* Dashboard */}
           <Route
             path="/dashboard"
-            element={<Dashboard />}
-          />
-
-          <Route
-            path="/productos"
-            element={<Catalogo key="productos" recurso="productos" puedeEditar={perfil?.rol === 'Administrador'} />}
-          />
-          <Route
-            path="/categorias"
-            element={
-              perfil?.rol === 'Administrador'
-                ? <Catalogo key="categorias" recurso="categorias" puedeEditar />
-                : <Navigate to="/dashboard" replace />
-            }
+            element={<Dashboard perfil={perfil} />}
           />
 
           {/* Administración de usuarios */}
