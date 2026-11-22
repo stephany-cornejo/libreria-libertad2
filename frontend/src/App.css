@@ -75,7 +75,7 @@
   border-radius: var(--radius);
   background: var(--surface);
 }
-.panel-indicador { padding: 1.1rem 1.2rem; border-top: 3px solid var(--navy); }
+.panel-indicador { padding: 1.1rem 1.2rem; }
 .panel-indicador dt { color: var(--muted); font-weight: 600; }
 .panel-indicador dd {
   margin: .3rem 0 0;
@@ -87,16 +87,25 @@
 .panel-indicadores, .panel-destacados, .panel-categorias { margin: 0; padding: 0; }
 .panel-seccion h2 { padding: .85rem 1.15rem; border-bottom: 1px solid var(--line); }
 .panel-vacio { padding: .85rem 1.15rem; color: var(--muted); }
-.panel-categorias { display: flex; flex-wrap: wrap; gap: .5rem; padding: .9rem 1.15rem; list-style: none; }
+.panel-categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding: .9rem 1.15rem;
+  border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px);
+  background: #edf0f5;
+  list-style: none;
+}
 .panel-categorias a {
   display: block;
-  padding: .35rem .65rem;
+  padding: .35rem .75rem;
   border: 1px solid var(--line);
-  border-radius: 5px;
-  background: var(--subtle);
+  border-radius: 999px;
+  background: var(--surface);
+  color: #111;
   text-decoration: none;
 }
-.panel-categorias a:hover { border-color: #a7b4cb; background: #eef3fc; text-decoration: underline; }
+.panel-categorias a:hover { border-color: #a7b4cb; }
 .panel-destacados { list-style: none; }
 .panel-destacado {
   display: grid;
