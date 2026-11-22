@@ -13,3 +13,15 @@ Route::get('/estado', function () {
         'estado' => 'ok'
     ]);
 });
+
+Route::get('/perfil', function (Request $request) {
+    $usuario = $request->user()->load('rol');
+
+    return response()->json([
+        'id' => $usuario->id,
+        'nombre' => $usuario->name,
+        'usuario' => $usuario->usuario,
+        'estado' => $usuario->estado,
+        'rol' => $usuario->rol->nombre,
+    ]);
+})->middleware('auth:sanctum');
