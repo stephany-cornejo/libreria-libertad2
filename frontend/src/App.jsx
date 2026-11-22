@@ -106,15 +106,20 @@ function Login({ onLogin }) {
   );
 }
 
-// ESTRUCTURA PRINCIPAL Y NAVBAR
+// PANEL Y NAVEGACIÓN LATERAL
 function PanelLayout({ perfil, onLogout }) {
   const navigate = useNavigate();
   const [error, setError] = useState('');
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const modulosPermitidos = modulos.filter(
     (modulo) =>
       !modulo.admin || perfil.rol === 'Administrador'
   );
+
+  function cerrarMenu() {
+    setMenuAbierto(false);
+  }
 
   async function cerrarSesion() {
     setError('');
@@ -131,22 +136,39 @@ function PanelLayout({ perfil, onLogout }) {
   }
 
   return (
-    <>
-      <header className="cabecera">
-        <div className="cabecera-interior">
+    <div className="sistema">
+      <header className="barra-lateral">
+        <div className="barra-lateral-cabecera">
           <strong className="marca">Librería Independencia</strong>
+          <button
+            type="button"
+            className="menu-movil"
+            aria-expanded={menuAbierto}
+            aria-controls="barra-lateral-menu"
+            onClick={() => setMenuAbierto((abierto) => !abierto)}
+          >
+            {menuAbierto ? 'Cerrar menú' : 'Menú'}
+          </button>
+        </div>
 
-          <div className="sesion">
-            <span>{perfil.nombre} · {perfil.rol}</span>
-            <button type="button" onClick={cerrarSesion}>Cerrar sesión</button>
-          </div>
-
+        <div
+          id="barra-lateral-menu"
+          className={menuAbierto ? 'barra-lateral-menu menu-abierto' : 'barra-lateral-menu'}
+        >
           <nav aria-label="Navegación principal" className="navegacion">
-            <NavLink to="/dashboard" end>Panel de Control</NavLink>
+            <NavLink to="/dashboard" end onClick={cerrarMenu}>Panel de Control</NavLink>
             {modulosPermitidos.map(({ nombre, ruta }) => (
-              <NavLink key={ruta} to={ruta}>{nombre}</NavLink>
+              <NavLink key={ruta} to={ruta} onClick={cerrarMenu}>{nombre}</NavLink>
             ))}
           </nav>
+
+          <div className="sesion">
+            <div className="sesion-perfil">
+              <strong>{perfil.nombre}</strong>
+              <span>{perfil.rol}</span>
+            </div>
+            <button type="button" onClick={cerrarSesion}>Cerrar sesión</button>
+          </div>
         </div>
       </header>
 
@@ -154,7 +176,7 @@ function PanelLayout({ perfil, onLogout }) {
         {error && <p role="alert" className="aviso aviso-error">{error}</p>}
         <Outlet />
       </main>
-    </>
+    </div>
   );
 }
 
