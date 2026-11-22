@@ -132,8 +132,6 @@
   flex-wrap: wrap;
   gap: .5rem;
   padding: .9rem 1.15rem;
-  border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px);
-  background: #edf0f5;
   list-style: none;
 }
 .panel-categorias a {
@@ -141,7 +139,7 @@
   padding: .35rem .75rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--surface);
+  background: #edf0f5;
   color: #111;
   text-decoration: none;
 }
