@@ -16,12 +16,12 @@ import Catalogo from './pages/Catalogo';
 
 // Módulos del sistema
 const modulos = [
-  { nombre: 'Productos', ruta: '/productos', disponible: true },
-  { nombre: 'Categorías', ruta: '/categorias', disponible: true, admin: true },
-  { nombre: 'Proveedores', ruta: '/proveedores', disponible: false, admin: true },
-  { nombre: 'Usuarios', ruta: '/usuarios', disponible: true, admin: true },
-  { nombre: 'Movimientos', ruta: '/movimientos', disponible: false },
-  { nombre: 'Reportes', ruta: '/reportes', disponible: false },
+  { nombre: 'Productos', ruta: '/productos' },
+  { nombre: 'Categorías', ruta: '/categorias', admin: true },
+  { nombre: 'Proveedores', ruta: '/proveedores', pendiente: true, admin: true },
+  { nombre: 'Usuarios', ruta: '/usuarios', admin: true },
+  { nombre: 'Movimientos', ruta: '/movimientos', pendiente: true },
+  { nombre: 'Reportes', ruta: '/reportes', pendiente: true },
 ];
 
 // LOGIN
@@ -141,23 +141,10 @@ function PanelLayout({ perfil, onLogout }) {
             Dashboard
           </Link>
 
-          {modulosPermitidos.map((modulo) => (
-            modulo.disponible ? (
-              <Link
-                key={modulo.ruta}
-                to={modulo.ruta}
-              >
-                {modulo.nombre}
-              </Link>
-            ) : (
-              <span
-                key={modulo.ruta}
-                style={estilos.moduloPendiente}
-                title="Módulo pendiente de implementación"
-              >
-                {modulo.nombre}
-              </span>
-            )
+          {modulosPermitidos.map(({ nombre, ruta }) => (
+            <Link key={ruta} to={ruta}>
+              {nombre}
+            </Link>
           ))}
         </nav>
 
@@ -304,6 +291,23 @@ function App() {
             }
           />
 
+          {modulos.filter(({ pendiente }) => pendiente).map(({ nombre, ruta, admin }) => (
+            <Route
+              key={ruta}
+              path={ruta}
+              element={
+                !admin || perfil?.rol === 'Administrador' ? (
+                  <section>
+                    <h1>{nombre}</h1>
+                    <p>Este módulo está pendiente de implementación.</p>
+                  </section>
+                ) : (
+                  <Navigate to="/dashboard" replace />
+                )
+              }
+            />
+          ))}
+
           {/* Administración de usuarios */}
           <Route
             path="/usuarios"
@@ -373,11 +377,6 @@ const estilos = {
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 16,
-  },
-
-  moduloPendiente: {
-    color: '#999',
-    cursor: 'not-allowed',
   },
 
   sesion: {
