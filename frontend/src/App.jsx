@@ -206,14 +206,43 @@ function Dashboard() {
       {error && <p role="alert">{error}</p>}
       {!resumen && !error && <p role="status">Cargando indicadores…</p>}
       {resumen && (
-        <div style={estilos.indicadores}>
-          {indicadores.map(([clave, titulo, formato]) => (
-            <article key={clave} style={estilos.tarjeta}>
-              <h3>{titulo}</h3>
-              <strong style={estilos.valorIndicador}>{formato.format(resumen[clave])}</strong>
-            </article>
-          ))}
-        </div>
+        <>
+          <div style={estilos.indicadores}>
+            {indicadores.map(([clave, titulo, formato]) => (
+              <article key={clave} style={estilos.tarjeta}>
+                <h3>{titulo}</h3>
+                <strong style={estilos.valorIndicador}>{formato.format(resumen[clave])}</strong>
+              </article>
+            ))}
+          </div>
+
+          <section aria-labelledby="titulo-categorias">
+            <h2 id="titulo-categorias">Categorías</h2>
+            {resumen.categorias.length ? (
+              <ul style={estilos.enlacesCategorias}>
+                {resumen.categorias.map(({ id, nombre }) => (
+                  <li key={id}><Link to={`/productos?categoria=${id}`}>{nombre}</Link></li>
+                ))}
+              </ul>
+            ) : <p>Aún no hay categorías registradas.</p>}
+          </section>
+
+          <section aria-labelledby="titulo-destacados">
+            <h2 id="titulo-destacados">Destacados</h2>
+            {resumen.destacados.length ? (
+              <div style={estilos.indicadores}>
+                {resumen.destacados.map(({ id, codigo, nombre, precio, stock }) => (
+                  <article key={id} style={estilos.tarjeta}>
+                    <h3>{nombre}</h3>
+                    <span>{codigo}</span>
+                    <strong>{formatoInventario.format(precio)}</strong>
+                    <span>Unidades disponibles: {formatoCantidad.format(stock)}</span>
+                  </article>
+                ))}
+              </div>
+            ) : <p>Aún no hay productos con existencias.</p>}
+          </section>
+        </>
       )}
     </section>
   );
@@ -394,6 +423,14 @@ const estilos = {
     maxWidth: 1200,
     margin: 'auto',
     padding: 24,
+  },
+
+  enlacesCategorias: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 16,
+    listStyle: 'none',
+    padding: 0,
   },
 
   indicadores: {

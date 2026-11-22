@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import './Usuarios.css';
 
@@ -24,7 +25,9 @@ function detalleError(error, mensaje) {
 }
 
 export default function Catalogo({ recurso, puedeEditar }) {
+  const [parametros] = useSearchParams();
   const esProducto = recurso === 'productos';
+  const categoriaId = esProducto ? parametros.get('categoria') : null;
   const campos = esProducto ? camposProducto : camposCategoria;
   const titulo = esProducto ? 'Productos' : 'Categorías';
   const entidad = esProducto ? 'producto' : 'categoría';
@@ -40,6 +43,11 @@ export default function Catalogo({ recurso, puedeEditar }) {
   const [editando, setEditando] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const registrosVisibles = categoriaId
+    ? registros.filter(({ categoria_id }) => String(categoria_id) === categoriaId)
+    : registros;
+  const nombreCategoria = registrosVisibles[0]?.categoria?.nombre
+    ?? categorias.find(({ id }) => String(id) === categoriaId)?.nombre;
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
 
@@ -117,6 +125,12 @@ export default function Catalogo({ recurso, puedeEditar }) {
   return (
     <section className="usuarios-modulo">
       <h1>{titulo}</h1>
+      {categoriaId && (
+        <p>
+          {nombreCategoria ? `Categoría: ${nombreCategoria}` : 'Filtro por categoría aplicado.'}{' '}
+          <Link to="/productos">Ver todos los productos</Link>
+        </p>
+      )}
       {error && <p role="alert" className="usuarios-error">{error}</p>}
       {mensaje && <p role="status" className="usuarios-exito">{mensaje}</p>}
       {cargando && <p role="status">Cargando catálogo…</p>}
@@ -159,8 +173,10 @@ export default function Catalogo({ recurso, puedeEditar }) {
         </form>
       )}
 
-      {!cargando && registros.length === 0 && !error && <p>No hay registros.</p>}
-      {registros.length > 0 && (
+      {!cargando && registrosVisibles.length === 0 && !error && (
+        <p>{categoriaId ? 'No hay productos en esta categoría.' : 'No hay registros.'}</p>
+      )}
+      {registrosVisibles.length > 0 && (
         <div className="usuarios-tabla-contenedor">
           <table className="usuarios-tabla">
             <thead>
@@ -173,7 +189,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
               </tr>
             </thead>
             <tbody>
-              {registros.map((registro) => (
+              {registrosVisibles.map((registro) => (
                 <tr key={registro.id}>
                   {esProducto && <td>{registro.codigo}</td>}
                   <td>{registro.nombre}</td>
