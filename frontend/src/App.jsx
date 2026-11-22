@@ -6,6 +6,7 @@ import {
   Route,
   Navigate,
   Link,
+  NavLink,
   Outlet,
   useNavigate,
 } from 'react-router-dom';
@@ -13,6 +14,7 @@ import {
 import api from './services/api';
 import Usuarios from './pages/Usuarios';
 import Catalogo from './pages/Catalogo';
+import './App.css';
 
 // Módulos del sistema
 const modulos = [
@@ -63,44 +65,43 @@ function Login({ onLogin }) {
   }
 
   return (
-    <main style={estilos.login}>
-      <h1>Librería Independencia</h1>
-      <p>Sistema de Gestión de Inventario</p>
+    <main className="login">
+      <section className="login-panel">
+        <header className="login-marca">
+          <h1>Librería Independencia</h1>
+          <p>Sistema de gestión de inventario</p>
+        </header>
 
-      <form
-        onSubmit={iniciarSesion}
-        style={estilos.formulario}
-      >
-        <h2>Iniciar sesión</h2>
+        <form onSubmit={iniciarSesion} className="login-formulario">
+          <h2>Iniciar sesión</h2>
 
-        <label htmlFor="usuario">Usuario</label>
-        <input
-          id="usuario"
-          type="text"
-          value={usuario}
-          onChange={(e) => setUsuario(e.target.value)}
-          required
-        />
+          <label htmlFor="usuario">Usuario</label>
+          <input
+            id="usuario"
+            autoComplete="username"
+            type="text"
+            value={usuario}
+            onChange={(e) => setUsuario(e.target.value)}
+            required
+          />
 
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            autoComplete="current-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-        {error && (
-          <p style={{ color: 'crimson' }}>
-            {error}
-          </p>
-        )}
+          {error && <p role="alert" className="aviso aviso-error">{error}</p>}
 
-        <button type="submit" disabled={cargando}>
-          {cargando ? 'Ingresando...' : 'Ingresar'}
-        </button>
-      </form>
+          <button type="submit" className="accion-principal" disabled={cargando}>
+            {cargando ? 'Ingresando…' : 'Ingresar'}
+          </button>
+        </form>
+      </section>
     </main>
   );
 }
@@ -131,41 +132,26 @@ function PanelLayout({ perfil, onLogout }) {
 
   return (
     <>
-      <header style={estilos.cabecera}>
-        <strong style={estilos.logo}>
-          Librería Independencia
-        </strong>
+      <header className="cabecera">
+        <div className="cabecera-interior">
+          <strong className="marca">Librería Independencia</strong>
 
-        <nav style={estilos.navegacion}>
-          <Link to="/dashboard">
-            Dashboard
-          </Link>
+          <div className="sesion">
+            <span>{perfil.nombre} · {perfil.rol}</span>
+            <button type="button" onClick={cerrarSesion}>Cerrar sesión</button>
+          </div>
 
-          {modulosPermitidos.map(({ nombre, ruta }) => (
-            <Link key={ruta} to={ruta}>
-              {nombre}
-            </Link>
-          ))}
-        </nav>
-
-        <div style={estilos.sesion}>
-          <span>
-            {perfil.nombre} ({perfil.rol})
-          </span>
-
-          <button onClick={cerrarSesion}>
-            Cerrar sesión
-          </button>
+          <nav aria-label="Navegación principal" className="navegacion">
+            <NavLink to="/dashboard" end>Panel de Control</NavLink>
+            {modulosPermitidos.map(({ nombre, ruta }) => (
+              <NavLink key={ruta} to={ruta}>{nombre}</NavLink>
+            ))}
+          </nav>
         </div>
       </header>
 
-      {error && (
-        <p role="alert" style={{ color: 'crimson' }}>
-          {error}
-        </p>
-      )}
-
-      <main style={estilos.contenido}>
+      <main className="contenido">
+        {error && <p role="alert" className="aviso aviso-error">{error}</p>}
         <Outlet />
       </main>
     </>
@@ -269,7 +255,7 @@ function App() {
 
   if (verificando) {
     return (
-      <p style={{ padding: 24 }}>
+      <p className="contenido" role="status">
         Verificando sesión...
       </p>
     );
@@ -330,9 +316,9 @@ function App() {
               path={ruta}
               element={
                 !admin || perfil?.rol === 'Administrador' ? (
-                  <section>
+                  <section className="modulo-pendiente">
                     <h1>{nombre}</h1>
-                    <p>Este módulo está pendiente de implementación.</p>
+                    <p className="aviso">Este módulo está pendiente de implementación.</p>
                   </section>
                 ) : (
                   <Navigate to="/dashboard" replace />
@@ -373,58 +359,6 @@ function App() {
 
 // ESTILOS GENERALES
 const estilos = {
-  login: {
-    maxWidth: 450,
-    margin: '80px auto',
-    padding: 24,
-  },
-
-  formulario: {
-    display: 'grid',
-    gap: 14,
-    marginTop: 24,
-    padding: 24,
-    background: '#fff',
-    borderRadius: 12,
-    border: '1px solid #ddd',
-  },
-
-  cabecera: {
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 20,
-    padding: 20,
-    background: '#fff',
-    borderBottom: '1px solid #ddd',
-  },
-
-  logo: {
-    fontSize: 18,
-    whiteSpace: 'nowrap',
-  },
-
-  navegacion: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 16,
-  },
-
-  sesion: {
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-
-  contenido: {
-    maxWidth: 1200,
-    margin: 'auto',
-    padding: 24,
-  },
-
   enlacesCategorias: {
     display: 'flex',
     flexWrap: 'wrap',
