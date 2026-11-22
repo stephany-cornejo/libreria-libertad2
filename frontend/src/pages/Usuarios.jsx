@@ -141,13 +141,13 @@ export default function Usuarios() {
 
   return (
     <section className="usuarios-modulo">
-      <h2>Administración de usuarios</h2>
+      <h1>Usuarios</h1>
 
-      {mensaje && <p className="usuarios-exito">{mensaje}</p>}
-      {error && <p className="usuarios-error">{error}</p>}
+      {mensaje && <p role="status" className="aviso usuarios-exito">{mensaje}</p>}
+      {error && <p role="alert" className="aviso aviso-error">{error}</p>}
 
       <form onSubmit={guardar} className="usuarios-formulario">
-        <h3>{editando ? 'Editar usuario' : 'Nuevo usuario'}</h3>
+        <h2>{editando ? 'Editar usuario' : 'Nuevo usuario'}</h2>
 
         <label>
           Nombre completo*
@@ -225,7 +225,7 @@ export default function Usuarios() {
         </label>
 
         <div className="usuarios-acciones">
-          <button type="submit" disabled={guardando}>
+          <button type="submit" className="accion-principal" disabled={guardando}>
             {guardando ? 'Guardando...' : 'Guardar usuario'}
           </button>
 
@@ -237,7 +237,7 @@ export default function Usuarios() {
         </div>
       </form>
 
-      <h3>Usuarios registrados</h3>
+      <h2>Usuarios registrados</h2>
 
       <div className="usuarios-tabla-contenedor">
         <table className="usuarios-tabla">
@@ -253,19 +253,21 @@ export default function Usuarios() {
           <tbody>
             {usuarios.map((item) => (
               <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.usuario}</td>
+                <td className="tabla-nombre">{item.name}</td>
+                <td className="tabla-codigo">{item.usuario}</td>
                 <td>{item.rol?.nombre ?? 'Sin rol'}</td>
-                <td>{item.estado}</td>
                 <td>
-                  <button onClick={() => editar(item)}>
-                    Editar
-                  </button>{' '}
-                  <button onClick={() => cambiarEstado(item)}>
-                    {item.estado === 'activo'
-                      ? 'Desactivar'
-                      : 'Activar'}
-                  </button>
+                  <span className={item.estado === 'activo' ? 'estado-registro estado-activo' : 'estado-registro'}>
+                    {item.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                  </span>
+                </td>
+                <td>
+                  <div className="tabla-acciones">
+                    <button type="button" onClick={() => editar(item)}>Editar</button>
+                    <button type="button" onClick={() => cambiarEstado(item)}>
+                      {item.estado === 'activo' ? 'Desactivar' : 'Activar'}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

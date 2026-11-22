@@ -3,6 +3,14 @@ import { Link, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import './Usuarios.css';
 
+const formatoPrecio = new Intl.NumberFormat('es-SV', { style: 'currency', currency: 'USD' });
+
+function claseStock({ stock, stock_minimo }) {
+  if (stock === 0) return 'estado-registro estado-agotado';
+  if (stock <= stock_minimo) return 'estado-registro estado-bajo';
+  return 'estado-registro estado-activo';
+}
+
 const camposCategoria = [
   { nombre: 'nombre', etiqueta: 'Nombre', maxLength: 100, required: true },
   { nombre: 'descripcion', etiqueta: 'Descripción', maxLength: 500 },
@@ -126,18 +134,18 @@ export default function Catalogo({ recurso, puedeEditar }) {
     <section className="usuarios-modulo">
       <h1>{titulo}</h1>
       {categoriaId && (
-        <p>
-          {nombreCategoria ? `Categoría: ${nombreCategoria}` : 'Filtro por categoría aplicado.'}{' '}
+        <p className="aviso catalogo-filtro">
+          {nombreCategoria ? `Categoría: ${nombreCategoria}` : 'Filtro por categoría aplicado.'}
           <Link to="/productos">Ver todos los productos</Link>
         </p>
       )}
-      {error && <p role="alert" className="usuarios-error">{error}</p>}
-      {mensaje && <p role="status" className="usuarios-exito">{mensaje}</p>}
-      {cargando && <p role="status">Cargando catálogo…</p>}
+      {error && <p role="alert" className="aviso aviso-error">{error}</p>}
+      {mensaje && <p role="status" className="aviso usuarios-exito">{mensaje}</p>}
+      {cargando && <p role="status" className="aviso">Cargando catálogo…</p>}
 
       {puedeEditar && !cargando && (
         <form className="usuarios-formulario" onSubmit={guardar}>
-          <h3>{editando ? 'Editar' : esProducto ? 'Nuevo' : 'Nueva'} {entidad}</h3>
+          <h2>{editando ? 'Editar' : esProducto ? 'Nuevo' : 'Nueva'} {entidad}</h2>
           {campos.map(({ nombre, etiqueta, ...atributos }) => {
             const props = {
               name: nombre,
@@ -165,7 +173,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
           })}
           {esProducto && categorias.length === 0 && <p>Crea una categoría para registrar productos.</p>}
           <div className="usuarios-acciones">
-            <button disabled={guardando || (esProducto && categorias.length === 0)}>
+            <button type="submit" className="accion-principal" disabled={guardando || (esProducto && categorias.length === 0)}>
               {guardando ? 'Procesando…' : 'Guardar'}
             </button>
             {editando && <button type="button" disabled={guardando} onClick={cancelar}>Cancelar</button>}
@@ -174,7 +182,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
       )}
 
       {!cargando && registrosVisibles.length === 0 && !error && (
-        <p>{categoriaId ? 'No hay productos en esta categoría.' : 'No hay registros.'}</p>
+        <p className="aviso">{categoriaId ? 'No hay productos en esta categoría.' : 'No hay registros.'}</p>
       )}
       {registrosVisibles.length > 0 && (
         <div className="usuarios-tabla-contenedor">
@@ -184,28 +192,32 @@ export default function Catalogo({ recurso, puedeEditar }) {
                 {esProducto && <th>Código</th>}
                 <th>Nombre</th>
                 <th>Descripción</th>
-                {esProducto && <><th>Categoría</th><th>Precio</th><th>Stock</th><th>Stock mínimo</th></>}
+                {esProducto && <><th>Categoría</th><th className="tabla-cifra">Precio</th><th className="tabla-cifra">Stock</th><th className="tabla-cifra">Stock mínimo</th></>}
                 {puedeEditar && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
               {registrosVisibles.map((registro) => (
                 <tr key={registro.id}>
-                  {esProducto && <td>{registro.codigo}</td>}
-                  <td>{registro.nombre}</td>
+                  {esProducto && <td className="tabla-codigo">{registro.codigo}</td>}
+                  <td className="tabla-nombre">{registro.nombre}</td>
                   <td>{registro.descripcion}</td>
                   {esProducto && (
                     <>
                       <td>{registro.categoria.nombre}</td>
-                      <td>{registro.precio}</td>
-                      <td>{registro.stock}</td>
-                      <td>{registro.stock_minimo}</td>
+                      <td className="tabla-cifra">{formatoPrecio.format(registro.precio)}</td>
+                      <td className="tabla-cifra">
+                        <span className={claseStock(registro)}>{registro.stock}</span>
+                      </td>
+                      <td className="tabla-cifra">{registro.stock_minimo}</td>
                     </>
                   )}
                   {puedeEditar && (
                     <td>
-                      <button type="button" disabled={guardando} onClick={() => editar(registro)}>Editar</button>{' '}
-                      <button type="button" disabled={guardando} onClick={() => eliminar(registro)}>Eliminar</button>
+                      <div className="tabla-acciones">
+                        <button type="button" disabled={guardando} onClick={() => editar(registro)}>Editar</button>
+                        <button type="button" className="accion-peligro" disabled={guardando} onClick={() => eliminar(registro)}>Eliminar</button>
+                      </div>
                     </td>
                   )}
                 </tr>
