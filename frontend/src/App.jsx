@@ -16,12 +16,12 @@ import Catalogo from './pages/Catalogo';
 
 // Módulos del sistema
 const modulos = [
-  { nombre: 'Productos', ruta: '/productos', disponible: true },
-  { nombre: 'Categorías', ruta: '/categorias', disponible: true, admin: true },
-  { nombre: 'Proveedores', ruta: '/proveedores', disponible: false, admin: true },
-  { nombre: 'Usuarios', ruta: '/usuarios', disponible: true, admin: true },
-  { nombre: 'Movimientos', ruta: '/movimientos', disponible: false },
-  { nombre: 'Reportes', ruta: '/reportes', disponible: false },
+  { nombre: 'Productos', ruta: '/productos' },
+  { nombre: 'Categorías', ruta: '/categorias', admin: true },
+  { nombre: 'Proveedores', ruta: '/proveedores', pendiente: true, admin: true },
+  { nombre: 'Usuarios', ruta: '/usuarios', admin: true },
+  { nombre: 'Movimientos', ruta: '/movimientos', pendiente: true },
+  { nombre: 'Reportes', ruta: '/reportes', pendiente: true },
 ];
 
 // LOGIN
@@ -141,23 +141,10 @@ function PanelLayout({ perfil, onLogout }) {
             Dashboard
           </Link>
 
-          {modulosPermitidos.map((modulo) => (
-            modulo.disponible ? (
-              <Link
-                key={modulo.ruta}
-                to={modulo.ruta}
-              >
-                {modulo.nombre}
-              </Link>
-            ) : (
-              <span
-                key={modulo.ruta}
-                style={estilos.moduloPendiente}
-                title="Módulo pendiente de implementación"
-              >
-                {modulo.nombre}
-              </span>
-            )
+          {modulosPermitidos.map(({ nombre, ruta }) => (
+            <Link key={ruta} to={ruta}>
+              {nombre}
+            </Link>
           ))}
         </nav>
 
@@ -185,12 +172,16 @@ function PanelLayout({ perfil, onLogout }) {
   );
 }
 
+const formatoCantidad = new Intl.NumberFormat('es-SV');
+const formatoInventario = new Intl.NumberFormat('es-SV', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 const indicadores = [
-  ['totalProductos', 'Productos registrados'],
-  ['productosConStockBajo', 'Productos en el mínimo o por debajo'],
-  ['totalUsuarios', 'Usuarios registrados'],
-  ['usuariosActivos', 'Usuarios activos'],
-  ['usuariosInactivos', 'Usuarios inactivos'],
+  ['skuDisponibles', 'Stock total disponible (SKU)', formatoCantidad],
+  ['unidadesDisponibles', 'Unidades totales disponibles', formatoCantidad],
+  ['valorInventario', 'Valor total en inventario', formatoInventario],
 ];
 
 function Dashboard() {
@@ -211,18 +202,47 @@ function Dashboard() {
 
   return (
     <section>
-      <h1>Resumen general del sistema</h1>
+      <h1>Panel de Control</h1>
       {error && <p role="alert">{error}</p>}
       {!resumen && !error && <p role="status">Cargando indicadores…</p>}
       {resumen && (
-        <div style={estilos.indicadores}>
-          {indicadores.filter(([clave]) => clave in resumen).map(([clave, titulo]) => (
-            <article key={clave} style={estilos.tarjeta}>
-              <h3>{titulo}</h3>
-              <strong style={estilos.valorIndicador}>{resumen[clave]}</strong>
-            </article>
-          ))}
-        </div>
+        <>
+          <div style={estilos.indicadores}>
+            {indicadores.map(([clave, titulo, formato]) => (
+              <article key={clave} style={estilos.tarjeta}>
+                <h3>{titulo}</h3>
+                <strong style={estilos.valorIndicador}>{formato.format(resumen[clave])}</strong>
+              </article>
+            ))}
+          </div>
+
+          <section aria-labelledby="titulo-categorias">
+            <h2 id="titulo-categorias">Categorías</h2>
+            {resumen.categorias.length ? (
+              <ul style={estilos.enlacesCategorias}>
+                {resumen.categorias.map(({ id, nombre }) => (
+                  <li key={id}><Link to={`/productos?categoria=${id}`}>{nombre}</Link></li>
+                ))}
+              </ul>
+            ) : <p>Aún no hay categorías registradas.</p>}
+          </section>
+
+          <section aria-labelledby="titulo-destacados">
+            <h2 id="titulo-destacados">Destacados</h2>
+            {resumen.destacados.length ? (
+              <div style={estilos.indicadores}>
+                {resumen.destacados.map(({ id, codigo, nombre, precio, stock }) => (
+                  <article key={id} style={estilos.tarjeta}>
+                    <h3>{nombre}</h3>
+                    <span>{codigo}</span>
+                    <strong>{formatoInventario.format(precio)}</strong>
+                    <span>Unidades disponibles: {formatoCantidad.format(stock)}</span>
+                  </article>
+                ))}
+              </div>
+            ) : <p>Aún no hay productos con existencias.</p>}
+          </section>
+        </>
       )}
     </section>
   );
@@ -304,6 +324,23 @@ function App() {
             }
           />
 
+          {modulos.filter(({ pendiente }) => pendiente).map(({ nombre, ruta, admin }) => (
+            <Route
+              key={ruta}
+              path={ruta}
+              element={
+                !admin || perfil?.rol === 'Administrador' ? (
+                  <section>
+                    <h1>{nombre}</h1>
+                    <p>Este módulo está pendiente de implementación.</p>
+                  </section>
+                ) : (
+                  <Navigate to="/dashboard" replace />
+                )
+              }
+            />
+          ))}
+
           {/* Administración de usuarios */}
           <Route
             path="/usuarios"
@@ -375,11 +412,6 @@ const estilos = {
     gap: 16,
   },
 
-  moduloPendiente: {
-    color: '#999',
-    cursor: 'not-allowed',
-  },
-
   sesion: {
     display: 'flex',
     alignItems: 'center',
@@ -391,6 +423,14 @@ const estilos = {
     maxWidth: 1200,
     margin: 'auto',
     padding: 24,
+  },
+
+  enlacesCategorias: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 16,
+    listStyle: 'none',
+    padding: 0,
   },
 
   indicadores: {
