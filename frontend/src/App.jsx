@@ -14,16 +14,19 @@ import {
 import api from './services/api';
 import Usuarios from './pages/Usuarios';
 import Catalogo from './pages/Catalogo';
+import Proveedores from './pages/Proveedores';
+import Movimientos from './pages/Movimientos';
+import Reportes from './pages/Reportes';
 import './App.css';
 
 // Módulos del sistema
 const modulos = [
   { nombre: 'Productos', ruta: '/productos' },
   { nombre: 'Categorías', ruta: '/categorias', admin: true },
-  { nombre: 'Proveedores', ruta: '/proveedores', pendiente: true, admin: true },
+  { nombre: 'Proveedores', ruta: '/proveedores', admin: true },
   { nombre: 'Usuarios', ruta: '/usuarios', admin: true },
-  { nombre: 'Movimientos', ruta: '/movimientos', pendiente: true },
-  { nombre: 'Reportes', ruta: '/reportes', pendiente: true },
+  { nombre: 'Movimientos', ruta: '/movimientos' },
+  { nombre: 'Reportes', ruta: '/reportes', admin: true },
 ];
 
 // LOGIN
@@ -336,6 +339,28 @@ function App() {
             element={
               perfil?.rol === 'Administrador'
                 ? <Catalogo key="categorias" recurso="categorias" puedeEditar />
+                : <Navigate to="/dashboard" replace />
+            }
+          />
+
+          {/* Inventario */}
+          <Route
+            path="/proveedores"
+            element={
+              perfil?.rol === 'Administrador'
+                ? <Proveedores />
+                : <Navigate to="/dashboard" replace />
+            }
+          />
+          <Route
+            path="/movimientos"
+            element={<Movimientos esAdministrador={perfil?.rol === 'Administrador'} />}
+          />
+          <Route
+            path="/reportes"
+            element={
+              perfil?.rol === 'Administrador'
+                ? <Reportes perfil={perfil} />
                 : <Navigate to="/dashboard" replace />
             }
           />

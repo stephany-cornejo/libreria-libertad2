@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\AlertaInventarioController;
 use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\MovimientoController;
 use App\Http\Controllers\Api\ProductoController;
+use App\Http\Controllers\Api\ProveedorController;
+use App\Http\Controllers\Api\ReporteController;
 use App\Http\Controllers\Api\ResumenController;
 use App\Http\Controllers\Api\UsuarioController;
 use App\Models\Rol;
@@ -26,7 +30,36 @@ Route::middleware(['auth:sanctum', 'rol'])->group(function () {
         ->parameters(['productos' => 'producto'])
         ->only(['index', 'show']);
 
+    // Proveedores (consulta)
+    Route::apiResource('proveedores', ProveedorController::class)
+        ->parameters(['proveedores' => 'proveedor'])
+        ->only(['index', 'show']);
+
+    // Movimientos de inventario
+    Route::get('/movimientos/conceptos', [MovimientoController::class, 'conceptos']);
+    Route::get('/movimientos/usuarios', [MovimientoController::class, 'usuarios']);
+    Route::post('/movimientos/entradas', [MovimientoController::class, 'registrarEntrada']);
+    Route::post('/movimientos/salidas', [MovimientoController::class, 'registrarSalida']);
+    Route::get('/movimientos', [MovimientoController::class, 'index']);
+    Route::get('/movimientos/{movimiento}', [MovimientoController::class, 'show'])->whereNumber('movimiento');
+
+    // Alertas de existencias
+    Route::get('/inventario/alertas', AlertaInventarioController::class);
+
     Route::middleware('rol:Administrador')->group(function () {
+        Route::apiResource('proveedores', ProveedorController::class)
+            ->parameters(['proveedores' => 'proveedor'])
+            ->only(['store', 'update']);
+        Route::patch('/proveedores/{proveedor}/estado', [ProveedorController::class, 'cambiarEstado']);
+
+        Route::prefix('reportes')->controller(ReporteController::class)->group(function () {
+            Route::get('/inventario', 'inventario');
+            Route::get('/existencias', 'existencias');
+            Route::get('/rotacion', 'rotacion');
+            Route::get('/movimientos', 'movimientos');
+            Route::get('/ventas', 'ventas');
+        });
+
         Route::get('/roles', fn () => Rol::orderBy('nombre')->get(['id', 'nombre']));
         Route::apiResource('usuarios', UsuarioController::class)->except(['destroy']);
         Route::apiResource('categorias', CategoriaController::class)
