@@ -16,6 +16,7 @@ import Usuarios from './pages/Usuarios';
 import Catalogo from './pages/Catalogo';
 import Proveedores from './pages/Proveedores';
 import Movimientos from './pages/Movimientos';
+import Reportes from './pages/Reportes';
 import './App.css';
 
 // Módulos del sistema
@@ -25,7 +26,7 @@ const modulos = [
   { nombre: 'Proveedores', ruta: '/proveedores', admin: true },
   { nombre: 'Usuarios', ruta: '/usuarios', admin: true },
   { nombre: 'Movimientos', ruta: '/movimientos' },
-  { nombre: 'Reportes', ruta: '/reportes', pendiente: true },
+  { nombre: 'Reportes', ruta: '/reportes', admin: true },
 ];
 
 // LOGIN
@@ -354,6 +355,14 @@ function App() {
           <Route
             path="/movimientos"
             element={<Movimientos esAdministrador={perfil?.rol === 'Administrador'} />}
+          />
+          <Route
+            path="/reportes"
+            element={
+              perfil?.rol === 'Administrador'
+                ? <Reportes perfil={perfil} />
+                : <Navigate to="/dashboard" replace />
+            }
           />
 
           {modulos.filter(({ pendiente }) => pendiente).map(({ nombre, ruta, admin }) => (
