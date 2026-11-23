@@ -116,8 +116,6 @@
 }
 .reporte-indicador dt { color: var(--muted); font-size: .86rem; font-weight: 600; }
 .reporte-indicador dd { margin: 0; font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 700; overflow-wrap: anywhere; }
-.indicador-peligro { border-left: 4px solid var(--danger); }
-.indicador-aviso { border-left: 4px solid #d29a2c; }
 
 @media (max-width: 540px) {
   .barras-fila { grid-template-columns: 1fr; gap: .2rem; }
