@@ -1,0 +1,112 @@
+/* Módulos de inventario: proveedores y movimientos.
+   Complementa Usuarios.css y usa las variables de index.css. */
+
+.inventario-titulo { display: grid; gap: .25rem; }
+.inventario-titulo p { color: var(--muted); }
+
+.inventario-secundario { display: block; color: var(--muted); font-size: .82rem; font-weight: 400; }
+.inventario-bloque { display: block; }
+.inventario-nowrap { white-space: nowrap; }
+.inventario-conteo { color: var(--muted); font-size: .9rem; }
+.inventario-motivo { min-width: 12rem; max-width: 22rem; }
+.inventario-producto { min-width: 12rem; }
+.inventario-producto .inventario-secundario { white-space: nowrap; }
+.inventario-proveedor { min-width: 10.5rem; }
+.inventario-usuario { min-width: 8.5rem; }
+
+/* Campos de formulario */
+.campo-ancho { grid-column: 1 / -1; }
+.campo-grupo { display: grid; align-content: start; gap: .35rem; font-size: .9rem; font-weight: 600; }
+.campo-grupo input, .campo-grupo select { width: 100%; }
+.campo-ayuda { color: var(--muted); font-size: .8rem; font-weight: 400; }
+
+/* Filtros */
+.inventario-filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: .75rem 1rem;
+  align-items: end;
+  padding: .9rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.inventario-filtros label { display: grid; gap: .3rem; font-size: .86rem; font-weight: 600; color: var(--muted); }
+.inventario-filtros input, .inventario-filtros select { width: 100%; }
+.filtros-limpiar { display: flex; align-items: end; }
+
+/* Tipo de movimiento y cantidades */
+.mov-entrada { background: var(--success-bg); color: var(--success); }
+.mov-salida { background: var(--danger-bg); color: var(--danger); }
+.usuarios-tabla .cantidad-entrada { color: var(--success); font-weight: 700; }
+.usuarios-tabla .cantidad-salida { color: var(--danger); font-weight: 700; }
+.tabla-actualizando { opacity: .6; transition: opacity .15s; }
+
+/* Paginación */
+.inventario-paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem 1rem;
+  color: var(--muted);
+}
+.inventario-paginacion .usuarios-acciones { align-items: center; padding: 0; }
+.paginacion-actual { padding-inline: .4rem; font-variant-numeric: tabular-nums; }
+
+/* Vista previa del stock en el formulario de registro */
+.inventario-vista-previa {
+  grid-column: 1 / -1;
+  padding: .65rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--subtle);
+  font-variant-numeric: tabular-nums;
+}
+.vista-previa-aviso { color: var(--warning); font-weight: 600; }
+.vista-previa-error { border-color: #f2c9d2; background: var(--danger-bg); color: var(--danger); }
+
+/* Alertas de existencias */
+.inventario-alertas { display: grid; gap: .85rem; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.inventario-alerta {
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.alerta-agotados { border-left-color: var(--danger); }
+.alerta-bajo { border-left-color: #d29a2c; }
+.inventario-alerta summary {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .85rem 1.1rem;
+  cursor: pointer;
+  list-style: none;
+}
+.inventario-alerta summary::-webkit-details-marker { display: none; }
+.alerta-cifra { font-size: 1.7rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.alerta-agotados .alerta-cifra { color: var(--danger); }
+.alerta-bajo .alerta-cifra { color: var(--warning); }
+.alerta-titulo { font-weight: 650; }
+.alerta-ver { margin-left: auto; color: var(--link); font-size: .86rem; }
+.inventario-alerta[open] .alerta-ver { color: var(--muted); }
+.inventario-alerta ul { max-height: 320px; margin: 0; padding: 0; overflow-y: auto; list-style: none; border-top: 1px solid var(--line); }
+.inventario-alerta li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .4rem .8rem;
+  padding: .6rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+.inventario-alerta li:last-child { border-bottom: 0; }
+.alerta-producto { display: grid; min-width: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .inventario-alertas { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .inventario-alerta li { grid-template-columns: 1fr; }
+}
