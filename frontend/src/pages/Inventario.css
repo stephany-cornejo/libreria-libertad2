@@ -66,6 +66,28 @@
 .vista-previa-aviso { color: var(--warning); font-weight: 600; }
 .vista-previa-error { border-color: #f2c9d2; background: var(--danger-bg); color: var(--danger); }
 
+/* Paso de confirmación del registro */
+.registro-confirmacion { display: grid; gap: .85rem; }
+.registro-confirmacion dl {
+  display: grid;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.registro-confirmacion dl > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 30%) minmax(0, 1fr);
+  gap: 1rem;
+  padding: .5rem .85rem;
+  border-bottom: 1px solid var(--line);
+  font-size: .93rem;
+}
+.registro-confirmacion dl > div:nth-child(odd) { background: var(--subtle); }
+.registro-confirmacion dl > div:last-child { border-bottom: 0; }
+.registro-confirmacion dt { color: var(--muted); font-weight: 600; }
+.registro-confirmacion dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+
 /* Alertas de existencias */
 .inventario-alertas { display: grid; gap: .85rem; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 .inventario-alerta {

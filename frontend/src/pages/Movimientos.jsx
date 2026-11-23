@@ -13,7 +13,7 @@ import './Usuarios.css';
 import './Inventario.css';
 
 const POR_PAGINA = 20;
-const filtrosVacios = { buscar: '', tipo: '', concepto: '', producto_id: '', desde: '', hasta: '' };
+const filtrosVacios = { buscar: '', tipo: '', concepto: '', producto_id: '', usuario_id: '', desde: '', hasta: '' };
 const CONCEPTOS_CON_PRECIO = ['compra', 'reposicion', 'venta'];
 
 // ─────────────────────────────────────────────────────────────
@@ -34,6 +34,7 @@ function RegistroMovimiento({ tipo, conceptos, productos, proveedores, esAdminis
     motivo: '',
   });
   const [filtroProducto, setFiltroProducto] = useState('');
+  const [confirmando, setConfirmando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
@@ -70,8 +71,15 @@ function RegistroMovimiento({ tipo, conceptos, productos, proveedores, esAdminis
 
   async function guardar(evento) {
     evento.preventDefault();
-    setGuardando(true);
     setError('');
+
+    // Primer envío: el navegador ya validó los campos; se pide confirmación.
+    if (!confirmando) {
+      setConfirmando(true);
+      return;
+    }
+
+    setGuardando(true);
 
     try {
       const { data } = await api.post(`/api/movimientos/${esEntrada ? 'entradas' : 'salidas'}`, {
@@ -88,15 +96,47 @@ function RegistroMovimiento({ tipo, conceptos, productos, proveedores, esAdminis
     } catch (fallo) {
       setError(detalleError(fallo, 'No se pudo registrar el movimiento.'));
       setGuardando(false);
+      setConfirmando(false);
     }
   }
+
+  const proveedor = proveedores.find((p) => String(p.id) === datos.proveedor_id);
+  const resumen = [
+    ['Producto', producto && `${producto.codigo} — ${producto.nombre}`],
+    ['Concepto', concepto?.etiqueta],
+    ['Cantidad', cantidadValida && `${esEntrada ? '+' : '−'}${formatoCantidad.format(cantidad)} ${cantidad === 1 ? 'unidad' : 'unidades'}`],
+    ['Existencias', producto && stockResultante !== null && `${formatoCantidad.format(producto.stock)} → ${formatoCantidad.format(stockResultante)}`],
+    ['Proveedor', proveedor?.nombre],
+    [esEntrada ? 'Costo unitario' : 'Precio unitario', datos.precio_unitario !== '' && formatoDinero.format(datos.precio_unitario)],
+    ['Referencia', datos.referencia.trim()],
+    ['Fecha', datos.fecha ? fechaLegible(fechaLocalAIso(datos.fecha)) : 'Fecha y hora actuales'],
+    ['Motivo', datos.motivo.trim() || concepto?.motivo_predeterminado],
+  ].filter(([, valor]) => valor);
 
   return (
     <Dialogo tituloId="registro-titulo" guardando={guardando} alCancelar={alCancelar} ancho="760px">
       <form className="usuarios-formulario" onSubmit={guardar}>
-        <h2 id="registro-titulo">{esEntrada ? 'Registrar entrada de inventario' : 'Registrar salida de inventario'}</h2>
+        <h2 id="registro-titulo">
+          {confirmando
+            ? `Confirmar ${esEntrada ? 'entrada' : 'salida'} de inventario`
+            : esEntrada ? 'Registrar entrada de inventario' : 'Registrar salida de inventario'}
+        </h2>
         {error && <p role="alert" className="aviso aviso-error">{error}</p>}
 
+        {confirmando ? (
+          <div className="campo-ancho registro-confirmacion">
+            <dl>
+              {resumen.map(([etiqueta, valor]) => (
+                <div key={etiqueta}><dt>{etiqueta}</dt><dd>{valor}</dd></div>
+              ))}
+            </dl>
+            <p className="aviso">
+              Revisa los datos antes de continuar. Los movimientos <strong>no se pueden modificar ni eliminar</strong>;
+              una corrección se registra como un movimiento nuevo.
+            </p>
+          </div>
+        ) : (
+        <>
         <div className="campo-ancho campo-grupo">
           <label htmlFor="registro-producto">Producto*</label>
           <input
@@ -214,11 +254,20 @@ function RegistroMovimiento({ tipo, conceptos, productos, proveedores, esAdminis
           </p>
         )}
 
+        </>
+        )}
+
         <div className="usuarios-acciones">
           <button type="submit" className="accion-principal" disabled={guardando || sinExistencias || excedeStock}>
-            {guardando ? 'Registrando…' : esEntrada ? 'Registrar entrada' : 'Registrar salida'}
+            {guardando
+              ? 'Registrando…'
+              : confirmando
+                ? `Confirmar y registrar ${esEntrada ? 'entrada' : 'salida'}`
+                : 'Revisar y continuar'}
           </button>
-          <button type="button" disabled={guardando} onClick={alCancelar}>Cancelar</button>
+          {confirmando
+            ? <button type="button" disabled={guardando} onClick={() => setConfirmando(false)}>Volver a editar</button>
+            : <button type="button" disabled={guardando} onClick={alCancelar}>Cancelar</button>}
         </div>
       </form>
     </Dialogo>
@@ -278,6 +327,7 @@ export default function Movimientos({ esAdministrador }) {
   const [conceptos, setConceptos] = useState([]);
   const [productos, setProductos] = useState([]);
   const [proveedores, setProveedores] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [alertas, setAlertas] = useState(null);
   const [historial, setHistorial] = useState(null);
   const [filtros, setFiltros] = useState(filtrosVacios);
@@ -302,11 +352,13 @@ export default function Movimientos({ esAdministrador }) {
       api.get('/api/productos', opciones),
       api.get('/api/proveedores', { ...opciones, params: { estado: 'activo' } }),
       api.get('/api/inventario/alertas', opciones),
-    ]).then(([respConceptos, respProductos, respProveedores, respAlertas]) => {
+      api.get('/api/movimientos/usuarios', opciones),
+    ]).then(([respConceptos, respProductos, respProveedores, respAlertas, respUsuarios]) => {
       setConceptos(respConceptos.data);
       setProductos(respProductos.data);
       setProveedores(respProveedores.data);
       setAlertas(respAlertas.data);
+      setUsuarios(respUsuarios.data);
     }).catch((fallo) => {
       if (!controlador.signal.aborted) setError(detalleError(fallo, 'No se pudieron cargar los datos de inventario.'));
     });
@@ -434,6 +486,13 @@ export default function Movimientos({ esAdministrador }) {
           <select name="concepto" value={filtros.concepto} onChange={cambiarFiltro}>
             <option value="">Todos</option>
             {conceptosFiltro.map((c) => <option key={c.valor} value={c.valor}>{c.etiqueta}</option>)}
+          </select>
+        </label>
+        <label>
+          Registrado por
+          <select name="usuario_id" value={filtros.usuario_id} onChange={cambiarFiltro}>
+            <option value="">Todos los usuarios</option>
+            {usuarios.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
         </label>
         <label>
