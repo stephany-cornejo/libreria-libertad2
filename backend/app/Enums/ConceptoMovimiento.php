@@ -60,6 +60,21 @@ enum ConceptoMovimiento: string
         return in_array($this, [self::Devolucion, self::Perdida, self::Dano, self::Ajuste], true);
     }
 
+    /**
+     * Motivo que se registra cuando el usuario no escribe uno.
+     * Solo existe para los conceptos donde el motivo no es obligatorio,
+     * de modo que todo movimiento del historial tenga siempre un motivo.
+     */
+    public function motivoPredeterminado(): ?string
+    {
+        return match ($this) {
+            self::Compra => 'Compra a proveedor',
+            self::Reposicion => 'Reposición de inventario',
+            self::Venta => 'Venta a cliente',
+            default => null,
+        };
+    }
+
     /** Los ajustes solo pueden registrarlos usuarios con rol Administrador. */
     public function requiereAutorizacion(): bool
     {

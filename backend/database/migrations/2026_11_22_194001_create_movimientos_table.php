@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('precio_unitario', 10, 2)->nullable();
             $table->dateTime('fecha');
             $table->string('referencia', 80)->nullable()->unique();
-            $table->string('motivo', 250)->nullable();
+            $table->string('motivo', 250);
             $table->timestamps();
 
             $table->index(['producto_id', 'fecha']);

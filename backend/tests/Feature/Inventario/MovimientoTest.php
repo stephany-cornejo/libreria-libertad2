@@ -42,9 +42,52 @@ class MovimientoTest extends TestCase
             ->assertJsonPath('producto.id', $producto->id)
             ->assertJsonPath('proveedor.id', $proveedor->id)
             ->assertJsonPath('usuario.id', $usuario->id)
+            ->assertJsonPath('motivo', 'Compra a proveedor')
             ->assertJsonStructure(['fecha']);
 
         $this->assertSame(14, $producto->refresh()->stock);
+    }
+
+    public function test_los_movimientos_se_relacionan_con_productos_usuarios_y_proveedores(): void
+    {
+        $usuario = $this->comoEmpleado();
+        $producto = $this->crearProducto();
+        $proveedor = Proveedor::factory()->create();
+
+        $this->postJson('/api/movimientos/entradas', [
+            'producto_id' => $producto->id, 'concepto' => 'compra', 'cantidad' => 3, 'proveedor_id' => $proveedor->id,
+        ])->assertCreated();
+
+        $movimiento = Movimiento::latest('id')->firstOrFail();
+
+        $this->assertTrue($movimiento->producto->is($producto));
+        $this->assertTrue($movimiento->usuario->is($usuario));
+        $this->assertTrue($movimiento->proveedor->is($proveedor));
+        $this->assertTrue($producto->movimientos()->whereKey($movimiento->id)->exists());
+        $this->assertTrue($usuario->movimientos()->whereKey($movimiento->id)->exists());
+        $this->assertTrue($proveedor->movimientos()->whereKey($movimiento->id)->exists());
+    }
+
+    public function test_todo_movimiento_queda_con_motivo_en_el_historial(): void
+    {
+        $this->comoAdministrador();
+        $producto = $this->crearProducto(stockInicial: 10);
+
+        // Sin motivo escrito: se registra el motivo predeterminado del concepto.
+        $this->postJson('/api/movimientos/salidas', [
+            'producto_id' => $producto->id, 'concepto' => 'venta', 'cantidad' => 1,
+        ])->assertCreated()->assertJsonPath('motivo', 'Venta a cliente');
+
+        $this->postJson('/api/movimientos/entradas', [
+            'producto_id' => $producto->id, 'concepto' => 'reposicion', 'cantidad' => 1, 'motivo' => '   ',
+        ])->assertCreated()->assertJsonPath('motivo', 'Reposición de inventario');
+
+        // Con motivo escrito: se conserva el del usuario, sin espacios sobrantes.
+        $this->postJson('/api/movimientos/salidas', [
+            'producto_id' => $producto->id, 'concepto' => 'venta', 'cantidad' => 1, 'motivo' => '  Venta mayorista a escuela  ',
+        ])->assertCreated()->assertJsonPath('motivo', 'Venta mayorista a escuela');
+
+        $this->assertSame(0, Movimiento::query()->whereNull('motivo')->orWhere('motivo', '')->count());
     }
 
     public function test_la_compra_exige_un_proveedor_activo(): void

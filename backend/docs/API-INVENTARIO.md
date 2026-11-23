@@ -21,7 +21,7 @@ proveedores 1 ──< movimientos >── 1 productos
 
 1. **El stock solo cambia mediante movimientos.** `productos.stock` no se puede editar desde el catálogo. Cada movimiento se registra en una transacción que bloquea la fila del producto (`SELECT … FOR UPDATE`). Así, dos operaciones simultáneas no pueden partir del mismo saldo.
 2. **El historial es inmutable.** Un movimiento no se edita ni se elimina. Una corrección se registra como un movimiento nuevo, por ejemplo un ajuste.
-3. **Trazabilidad.** Cada movimiento guarda quién lo registró, el stock antes y después, y el precio unitario. En las ventas, ese precio es el vigente al momento de vender.
+3. **Trazabilidad.** Todo movimiento tiene siempre fecha, producto, usuario, cantidad y motivo; las cinco columnas son `NOT NULL`. Si el concepto no exige motivo y no se escribe uno, se guarda el motivo predeterminado del concepto. Cada movimiento guarda también quién lo registró, el stock antes y después, y el precio unitario. En las ventas, ese precio es el vigente al momento de vender.
 4. **Los proveedores no se eliminan, se desactivan.** Un proveedor inactivo no puede usarse en nuevos movimientos.
 5. **Un producto con movimientos no se puede eliminar**, para conservar el historial.
 
@@ -29,10 +29,10 @@ proveedores 1 ──< movimientos >── 1 productos
 
 | Tipo | Concepto | Proveedor | Motivo | Quién puede registrarlo |
 |---|---|---|---|---|
-| entrada | `compra` | **Obligatorio** (activo) | Opcional | Administrador, Empleado |
-| entrada | `reposicion` | Opcional (activo) | Opcional | Administrador, Empleado |
+| entrada | `compra` | **Obligatorio** (activo) | Opcional; por defecto «Compra a proveedor» | Administrador, Empleado |
+| entrada | `reposicion` | Opcional (activo) | Opcional; por defecto «Reposición de inventario» | Administrador, Empleado |
 | entrada | `devolucion` | No admitido | **Obligatorio** | Administrador, Empleado |
-| salida | `venta` | No admitido | Opcional | Administrador, Empleado |
+| salida | `venta` | No admitido | Opcional; por defecto «Venta a cliente» | Administrador, Empleado |
 | salida | `perdida` | No admitido | **Obligatorio** | Administrador, Empleado |
 | salida | `dano` | No admitido | **Obligatorio** | Administrador, Empleado |
 | salida | `ajuste` | No admitido | **Obligatorio** | **Solo Administrador** |
@@ -89,7 +89,7 @@ Respuesta `201`:
 {
   "id": 361, "tipo": "entrada", "concepto": "compra", "cantidad": 24,
   "stock_anterior": 6, "stock_resultante": 30, "precio_unitario": "4.50",
-  "fecha": "2026-11-20T10:30:00.000000Z", "referencia": "FAC-000123", "motivo": null,
+  "fecha": "2026-11-20T10:30:00.000000Z", "referencia": "FAC-000123", "motivo": "Compra a proveedor",
   "producto": { "id": 12, "codigo": "LIB-012", "nombre": "…", "stock": 30, "stock_minimo": 5 },
   "proveedor": { "id": 3, "codigo": "PROV-03", "nombre": "…" },
   "usuario": { "id": 1, "name": "Administrador Principal", "usuario": "admin" }

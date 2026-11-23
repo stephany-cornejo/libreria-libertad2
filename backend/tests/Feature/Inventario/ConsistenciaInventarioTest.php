@@ -69,6 +69,19 @@ class ConsistenciaInventarioTest extends TestCase
             $this->assertSame($producto->stock, $saldo);
         }
 
+        // Cada registro del historial tiene fecha, producto, usuario, cantidad y motivo.
+        $incompletos = Movimiento::query()
+            ->where(fn ($q) => $q
+                ->whereNull('fecha')
+                ->orWhereNull('producto_id')
+                ->orWhereNull('usuario_id')
+                ->orWhere('cantidad', '<', 1)
+                ->orWhereNull('motivo')
+                ->orWhere('motivo', ''))
+            ->count();
+        $this->assertSame(0, $incompletos);
+        $this->assertSame(200 - $rechazadas, Movimiento::where('usuario_id', $admin->id)->count());
+
         $this->artisan('inventario:verificar')->assertSuccessful();
     }
 

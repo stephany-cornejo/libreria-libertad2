@@ -77,6 +77,7 @@ class MovimientoController extends Controller
             'requiere_proveedor' => $concepto->requiereProveedor(),
             'admite_proveedor' => $concepto->admiteProveedor(),
             'requiere_motivo' => $concepto->requiereMotivo(),
+            'motivo_predeterminado' => $concepto->motivoPredeterminado(),
             'solo_administrador' => $concepto->requiereAutorizacion(),
         ]));
     }

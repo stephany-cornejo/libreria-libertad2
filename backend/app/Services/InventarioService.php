@@ -69,7 +69,7 @@ class InventarioService
                 'precio_unitario' => $this->precioUnitario($concepto, $producto, $datos),
                 'fecha' => isset($datos['fecha']) ? Carbon::parse($datos['fecha']) : now(),
                 'referencia' => $datos['referencia'] ?? null,
-                'motivo' => $datos['motivo'] ?? null,
+                'motivo' => $this->motivo($concepto, $datos),
             ]);
         }, attempts: 3);
     }
@@ -133,6 +133,17 @@ class InventarioService
         }
 
         return $stockAnterior + $cantidad;
+    }
+
+    /**
+     * Todo movimiento queda con motivo: el que escribió el usuario o,
+     * si el concepto no lo exige, el motivo predeterminado del concepto.
+     */
+    private function motivo(ConceptoMovimiento $concepto, array $datos): string
+    {
+        $motivo = trim((string) ($datos['motivo'] ?? ''));
+
+        return $motivo !== '' ? $motivo : (string) $concepto->motivoPredeterminado();
     }
 
     /**
