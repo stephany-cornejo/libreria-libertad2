@@ -6,11 +6,12 @@ use App\Enums\ConceptoMovimiento;
 use App\Enums\TipoMovimiento;
 use App\Http\Controllers\Controller;
 use App\Models\Movimiento;
+use App\Models\User;
 use App\Services\InventarioService;
+use App\Support\ZonaHoraria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class MovimientoController extends Controller
@@ -66,6 +67,16 @@ class MovimientoController extends Controller
     }
 
     /**
+     * Usuarios que han registrado al menos un movimiento (para filtrar el historial).
+     */
+    public function usuarios(): JsonResponse
+    {
+        return response()->json(
+            User::query()->whereHas('movimientos')->orderBy('name')->get(['id', 'name', 'usuario']),
+        );
+    }
+
+    /**
      * Catálogo de conceptos con sus reglas, para construir formularios.
      */
     public function conceptos(): JsonResponse
@@ -115,8 +126,9 @@ class MovimientoController extends Controller
             ->when($filtros['usuario_id'] ?? null, fn ($q, $id) => $q->where('usuario_id', $id))
             ->when($filtros['tipo'] ?? null, fn ($q, $tipo) => $q->where('tipo', $tipo))
             ->when($filtros['concepto'] ?? null, fn ($q, $concepto) => $q->where('concepto', $concepto))
-            ->when($filtros['desde'] ?? null, fn ($q, $desde) => $q->where('fecha', '>=', Carbon::parse($desde)->startOfDay()))
-            ->when($filtros['hasta'] ?? null, fn ($q, $hasta) => $q->where('fecha', '<=', Carbon::parse($hasta)->endOfDay()))
+            // Las fechas del filtro son días locales del negocio.
+            ->when($filtros['desde'] ?? null, fn ($q, $desde) => $q->where('fecha', '>=', ZonaHoraria::inicioDelDia($desde)))
+            ->when($filtros['hasta'] ?? null, fn ($q, $hasta) => $q->where('fecha', '<=', ZonaHoraria::finDelDia($hasta)))
             ->when($filtros['buscar'] ?? null, function ($q, $texto) {
                 $patron = '%'.addcslashes($texto, '%_\\').'%';
                 $q->where(fn ($sub) => $sub

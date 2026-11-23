@@ -87,7 +87,11 @@ class AlertasYReportesTest extends TestCase
         $this->getJson('/api/reportes/movimientos?desde=2026-11-01&hasta=2026-11-30')
             ->assertOk()
             ->assertJsonPath('periodo', ['desde' => '2026-11-01', 'hasta' => '2026-11-30'])
-            ->assertJsonPath('totales', ['unidades_entrada' => 40, 'unidades_salida' => 10])
+            ->assertJsonPath('totales', [
+                'movimientos_entrada' => 2, 'movimientos_salida' => 4,
+                'unidades_entrada' => 40, 'unidades_salida' => 10, 'variacion_neta' => 30,
+            ])
+            ->assertJsonCount(30, 'por_dia')
             ->assertJsonFragment(['concepto' => 'compra', 'movimientos' => 2, 'unidades' => 40, 'importe' => '105.00'])
             ->assertJsonFragment(['concepto' => 'venta', 'movimientos' => 3, 'unidades' => 9, 'importe' => '52.50'])
             ->assertJsonFragment(['concepto' => 'perdida', 'movimientos' => 1, 'unidades' => 1, 'importe' => '0.00']);

@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum', 'rol'])->group(function () {
 
     // Movimientos de inventario
     Route::get('/movimientos/conceptos', [MovimientoController::class, 'conceptos']);
+    Route::get('/movimientos/usuarios', [MovimientoController::class, 'usuarios']);
     Route::post('/movimientos/entradas', [MovimientoController::class, 'registrarEntrada']);
     Route::post('/movimientos/salidas', [MovimientoController::class, 'registrarSalida']);
     Route::get('/movimientos', [MovimientoController::class, 'index']);
@@ -53,6 +54,8 @@ Route::middleware(['auth:sanctum', 'rol'])->group(function () {
 
         Route::prefix('reportes')->controller(ReporteController::class)->group(function () {
             Route::get('/inventario', 'inventario');
+            Route::get('/existencias', 'existencias');
+            Route::get('/rotacion', 'rotacion');
             Route::get('/movimientos', 'movimientos');
             Route::get('/ventas', 'ventas');
         });

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\ReporteInventarioService;
+use App\Support\ZonaHoraria;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ReporteController extends Controller
@@ -22,6 +24,27 @@ class ReporteController extends Controller
     public function inventario(): JsonResponse
     {
         return response()->json($this->reportes->inventario());
+    }
+
+    public function existencias(Request $request): JsonResponse
+    {
+        $datos = $request->validate([
+            'estado' => ['nullable', Rule::in(['agotados', 'stock_bajo', 'disponibles'])],
+            'categoria_id' => ['nullable', 'integer', 'exists:categorias,id'],
+        ]);
+
+        return response()->json($this->reportes->existencias(
+            $datos['estado'] ?? null,
+            isset($datos['categoria_id']) ? (int) $datos['categoria_id'] : null,
+        ));
+    }
+
+    public function rotacion(Request $request): JsonResponse
+    {
+        [$desde, $hasta] = $this->periodo($request);
+        $datos = $request->validate(['limite' => ['nullable', 'integer', 'min:1', 'max:50']]);
+
+        return response()->json($this->reportes->rotacion($desde, $hasta, (int) ($datos['limite'] ?? 15)));
     }
 
     public function movimientos(Request $request): JsonResponse
@@ -40,6 +63,8 @@ class ReporteController extends Controller
     }
 
     /**
+     * Periodo como inicio y fin de días locales del negocio (config inventario.zona_horaria).
+     *
      * @return array{0: Carbon, 1: Carbon}
      */
     private function periodo(Request $request): array
@@ -49,9 +74,10 @@ class ReporteController extends Controller
             'hasta' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:desde'],
         ]);
 
-        $hasta = isset($datos['hasta']) ? Carbon::parse($datos['hasta'])->endOfDay() : now()->endOfDay();
+        $zona = ZonaHoraria::local();
+        $hasta = isset($datos['hasta']) ? Carbon::parse($datos['hasta'], $zona)->endOfDay() : ZonaHoraria::ahora()->endOfDay();
         $desde = isset($datos['desde'])
-            ? Carbon::parse($datos['desde'])->startOfDay()
+            ? Carbon::parse($datos['desde'], $zona)->startOfDay()
             : $hasta->copy()->subDays(self::DIAS_POR_DEFECTO - 1)->startOfDay();
 
         if ($desde->greaterThan($hasta)) {
