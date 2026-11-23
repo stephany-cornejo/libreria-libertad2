@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -36,5 +37,15 @@ class User extends Authenticatable
     public function rol(): BelongsTo
     {
         return $this->belongsTo(Rol::class, 'id_rol');
+    }
+
+    public function movimientos(): HasMany
+    {
+        return $this->hasMany(Movimiento::class, 'usuario_id');
+    }
+
+    public function esAdministrador(): bool
+    {
+        return $this->rol?->nombre === 'Administrador';
     }
 }
