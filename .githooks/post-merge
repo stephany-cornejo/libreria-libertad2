@@ -1,0 +1,4 @@
+#!/bin/sh
+branch=$(git symbolic-ref --short HEAD) || exit 0
+[ "$branch" = main ] || exit 0
+exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./actualizar.ps1 -SoloAplicar

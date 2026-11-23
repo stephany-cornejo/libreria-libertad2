@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProveedorController;
 use App\Http\Controllers\Api\ReporteController;
 use App\Http\Controllers\Api\ResumenController;
 use App\Http\Controllers\Api\UsuarioController;
+use App\Http\Controllers\Api\ArchivoProductoController;
 use App\Models\Rol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,9 @@ Route::middleware(['auth:sanctum', 'rol'])->group(function () {
         ->parameters(['productos' => 'producto'])
         ->only(['index', 'show']);
 
+    Route::get('/productos/{producto}/archivos', [ArchivoProductoController::class, 'index']);
+    Route::get('/productos/{producto}/archivos/{archivo}', [ArchivoProductoController::class, 'show'])->whereNumber('archivo');
+
     // Proveedores (consulta)
     Route::apiResource('proveedores', ProveedorController::class)
         ->parameters(['proveedores' => 'proveedor'])
@@ -51,6 +55,8 @@ Route::middleware(['auth:sanctum', 'rol'])->group(function () {
             ->parameters(['proveedores' => 'proveedor'])
             ->only(['store', 'update']);
         Route::patch('/proveedores/{proveedor}/estado', [ProveedorController::class, 'cambiarEstado']);
+
+        Route::post('/productos/{producto}/archivos', [ArchivoProductoController::class, 'store']);
 
         Route::prefix('reportes')->controller(ReporteController::class)->group(function () {
             Route::get('/inventario', 'inventario');

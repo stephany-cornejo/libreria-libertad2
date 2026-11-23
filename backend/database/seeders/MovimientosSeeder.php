@@ -26,7 +26,7 @@ class MovimientosSeeder extends Seeder
             }
 
             $proveedores = DB::table('proveedores')
-                ->where('codigo', 'like', 'DEMO-PROV-%')
+                ->where('codigo', 'like', 'PRV-%')
                 ->orderBy('codigo')
                 ->pluck('id');
 
@@ -51,9 +51,9 @@ class MovimientosSeeder extends Seeder
 
                 $proveedor = $proveedores[$indice % $proveedores->count()];
                 $eventos = [
-                    ['entrada', 'compra', $primeraEntrada, 42 + $indice % 18, $proveedor, 'Compra inicial para inventario de demostración'],
-                    ['entrada', 'reposicion', $reposicion, 21 + $indice % 14, $proveedor, 'Reposición de demostración'],
-                    ['salida', 'venta', $salida, 2 + $indice % 14, null, 'Venta de demostración'],
+                    ['entrada', 'compra', $primeraEntrada, 42 + $indice % 18, $proveedor, 'Recepción de pedido al proveedor'],
+                    ['entrada', 'reposicion', $reposicion, 21 + $indice % 14, $proveedor, 'Reposición de existencias en sala de ventas'],
+                    ['salida', 'venta', $salida, 2 + $indice % 14, null, 'Venta de mostrador'],
                 ];
 
                 foreach ($eventos as $orden => [$tipo, $concepto, $cantidad, $dias, $proveedorId, $motivo]) {
@@ -79,6 +79,7 @@ class MovimientosSeeder extends Seeder
                         'updated_at' => $ahora,
                         'usuario_id' => $usuarioId,
                         'concepto' => $concepto,
+                        'precio_unitario' => $producto->precio,
                         'stock_anterior' => $producto->stock,
                         'stock_resultante' => $stock,
                     ]);

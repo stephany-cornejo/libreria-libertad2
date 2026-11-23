@@ -56,6 +56,10 @@ class ZonaHoraria
         $desde = Carbon::now(self::app())->format('P');
         $hacia = Carbon::now(self::local())->format('P');
 
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite') {
+            $segundos = Carbon::now(self::local())->offset - Carbon::now(self::app())->offset;
+            return "datetime({$columna}, '{$segundos} seconds')";
+        }
         return $desde === $hacia ? $columna : "CONVERT_TZ({$columna}, '{$desde}', '{$hacia}')";
     }
 }

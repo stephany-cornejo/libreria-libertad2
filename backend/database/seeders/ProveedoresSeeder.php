@@ -29,7 +29,7 @@ class ProveedoresSeeder extends Seeder
 
         foreach ($proveedores as $indice => $nombre) {
             $numero = $indice + 1;
-            $codigo = sprintf('DEMO-PROV-%02d', $numero);
+            $codigo = sprintf('PRV-%02d', $numero);
             if (DB::table('proveedores')->where('codigo', $codigo)->exists()) {
                 continue;
             }
@@ -37,8 +37,8 @@ class ProveedoresSeeder extends Seeder
             DB::table('proveedores')->insert([
                 'codigo' => $codigo,
                 'nombre' => $nombre,
-                'contacto' => 'Ventas mayoristas',
-                'email' => "proveedor{$numero}@example.com",
+                'contacto' => ['Ana Calderón', 'Luis Menjívar', 'Eva Molina', 'Gabriel Soto', 'Inés Rivera', 'Mario Flores', 'Rosa Núñez', 'Daniel Cañas', 'Olga Lara', 'Rubén Solís', 'Clara Vega', 'José Rivas', 'Sara Cruz', 'Raúl León', 'Iris Aguilar'][$indice],
+                'email' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

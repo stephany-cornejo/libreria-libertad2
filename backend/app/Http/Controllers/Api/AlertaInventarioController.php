@@ -24,7 +24,7 @@ class AlertaInventarioController extends Controller
         $stockBajo = Producto::query()
             ->stockBajo()
             ->with('categoria:id,nombre')
-            ->orderByRaw('stock / GREATEST(stock_minimo, 1)')
+            ->orderByRaw('1.0 * stock / NULLIF(stock_minimo, 0)')
             ->orderBy('nombre')
             ->get(self::COLUMNAS)
             ->each(fn (Producto $producto) => $producto->setAttribute(

@@ -13,6 +13,7 @@ const formularioVacio = {
 };
 
 export default function Usuarios({ alEditarUsuario }) {
+  const [busqueda, setBusqueda] = useState('');
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]);
   const [formulario, setFormulario] = useState({ ...formularioVacio });
@@ -263,6 +264,7 @@ export default function Usuarios({ alEditarUsuario }) {
       <h2>Usuarios registrados</h2>
 
       <div className="usuarios-tabla-contenedor">
+        <label>Buscar por nombre, usuario o estado <input type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)} /></label>
         <table className="usuarios-tabla">
           <thead>
             <tr>
@@ -274,7 +276,7 @@ export default function Usuarios({ alEditarUsuario }) {
             </tr>
           </thead>
           <tbody>
-            {usuarios.map((item) => (
+            {usuarios.filter(item => [item.name, item.usuario, item.estado].some(valor => valor?.toLowerCase().includes(busqueda.trim().toLowerCase()))).map((item) => (
               <tr key={item.id}>
                 <td className="tabla-nombre">{item.name}</td>
                 <td className="tabla-codigo">{item.usuario}</td>

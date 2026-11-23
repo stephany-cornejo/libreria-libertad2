@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 
 class ProductosSeeder extends Seeder
 {
-    public const PREFIJO = 'DEMO-LIB-';
+    public const PREFIJO = 'SKU-';
 
     public function run(): void
     {

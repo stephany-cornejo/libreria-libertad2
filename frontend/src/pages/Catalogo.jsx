@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import FichaProducto from './FichaProducto';
 import api from '../services/api';
 import './Usuarios.css';
 
@@ -80,10 +81,13 @@ export default function Catalogo({ recurso, puedeEditar }) {
   const [guardando, setGuardando] = useState(false);
   const [porEliminar, setPorEliminar] = useState(null);
   const [errorEliminar, setErrorEliminar] = useState('');
-  const registrosVisibles = categoriaId
+  const [busqueda, setBusqueda] = useState('');
+  const [detalle, setDetalle] = useState(null);
+  const porCategoria = categoriaId
     ? registros.filter(({ categoria_id }) => String(categoria_id) === categoriaId)
     : registros;
-  const nombreCategoria = registrosVisibles[0]?.categoria?.nombre
+  const registrosVisibles = porCategoria.filter(item => [item.nombre, item.codigo, item.descripcion, item.categoria?.nombre].some(valor => valor?.toLowerCase().includes(busqueda.trim().toLowerCase())));
+  const nombreCategoria = porCategoria[0]?.categoria?.nombre
     ?? categorias.find(({ id }) => String(id) === categoriaId)?.nombre;
   const [error, setError] = useState('');
   const [errorFormulario, setErrorFormulario] = useState('');
@@ -231,6 +235,10 @@ export default function Catalogo({ recurso, puedeEditar }) {
           </button>
         )}
       </header>
+      <label>Buscar en {titulo.toLowerCase()} <input type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)} /></label>
+      {detalle && <DialogoCatalogo tituloId="detalle-producto" alCancelar={() => setDetalle(null)}>
+        <FichaProducto producto={detalle} puedeEditar={puedeEditar} cerrar={() => setDetalle(null)} />
+      </DialogoCatalogo>}
       {categoriaId && (
         <p className="aviso catalogo-filtro">
           {nombreCategoria ? `Categoría: ${nombreCategoria}` : 'Filtro por categoría aplicado.'}
@@ -298,7 +306,7 @@ export default function Catalogo({ recurso, puedeEditar }) {
               {registrosVisibles.map((registro) => (
                 <tr key={registro.id}>
                   {esProducto && <td className="tabla-codigo">{registro.codigo}</td>}
-                  <td className="tabla-nombre">{registro.nombre}</td>
+                  <td className="tabla-nombre">{esProducto ? <button type="button" onClick={() => setDetalle(registro)}>{registro.nombre}</button> : registro.nombre}</td>
                   <td>{registro.descripcion}</td>
                   {esProducto && (
                     <>
