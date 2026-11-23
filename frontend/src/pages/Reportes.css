@@ -1,0 +1,55 @@
+/* Módulo de reportes. Usa las variables de index.css. */
+
+.reporte-pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+  border-bottom: 1px solid var(--line);
+}
+.reporte-pestanas [role="tab"] {
+  margin-bottom: -1px;
+  border: 1px solid transparent;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: var(--muted);
+}
+.reporte-pestanas [role="tab"]:hover:not(:disabled) { background: var(--surface); border-color: transparent; color: var(--ink); }
+.reporte-pestanas [role="tab"][aria-selected="true"] {
+  border-color: var(--line);
+  border-bottom-color: #edf0f5;
+  background: #edf0f5;
+  color: var(--navy);
+  box-shadow: inset 0 3px 0 var(--navy);
+}
+
+.reporte-panel { display: grid; gap: 1rem; min-width: 0; }
+
+.reporte-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: .9rem 1.25rem;
+  padding: .9rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.reporte-periodo { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem 1.25rem; }
+.periodo-presets { display: flex; flex-wrap: wrap; gap: .35rem; }
+.periodo-presets button { min-height: 34px; font-size: .86rem; }
+.periodo-presets button[aria-pressed="true"] { border-color: var(--navy); background: #e7ebf5; color: var(--navy); }
+.periodo-fechas { display: flex; flex-wrap: wrap; gap: .75rem; }
+.periodo-fechas label { display: grid; gap: .3rem; color: var(--muted); font-size: .86rem; font-weight: 600; }
+.periodo-fechas input[aria-invalid="true"] { border-color: var(--danger); }
+.reporte-exportar { display: flex; flex-wrap: wrap; gap: .45rem; margin-left: auto; }
+
+.reporte-contenido { display: grid; gap: 1rem; min-width: 0; }
+.reporte-contexto { color: var(--muted); font-size: .9rem; }
+.reporte-graficos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+.reporte-tabla { display: grid; gap: .6rem; min-width: 0; }
+.reporte-tabla tfoot td { border-top: 2px solid var(--line); background: var(--subtle); font-weight: 700; }
+
+@media (max-width: 980px) {
+  .reporte-graficos { grid-template-columns: minmax(0, 1fr); }
+}

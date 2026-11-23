@@ -1,0 +1,125 @@
+/* Gráficos e indicadores de reportes. Usa las variables de index.css. */
+
+.grafico {
+  display: grid;
+  gap: .85rem;
+  min-width: 0;
+  margin: 0;
+  padding: 1rem 1.15rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.grafico-cabecera { display: grid; gap: .15rem; }
+.grafico-cabecera p, .grafico-nota, .grafico-vacio { color: var(--muted); font-size: .86rem; }
+.grafico-vacio { padding: 1.5rem 0; text-align: center; }
+
+/* Leyenda */
+.grafico-leyenda { display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; margin: 0; padding: 0; list-style: none; color: var(--muted); font-size: .86rem; }
+.grafico-leyenda li { display: flex; align-items: center; gap: .4rem; }
+.leyenda-muestra { display: inline-block; flex-shrink: 0; width: 10px; height: 10px; border-radius: 2px; }
+
+/* Tooltip compartido */
+.grafico-tooltip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: .15rem;
+  min-width: max-content;
+  padding: .45rem .65rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px #19244624;
+  color: var(--ink);
+  font-size: .83rem;
+  pointer-events: none;
+}
+.tooltip-serie { display: flex; align-items: center; gap: .35rem; color: var(--muted); }
+.tooltip-serie b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Barras horizontales */
+.barras { display: grid; gap: .3rem; margin: 0; padding: 0; list-style: none; }
+.barras-fila {
+  display: grid;
+  grid-template-columns: minmax(7rem, 32%) minmax(0, 1fr);
+  align-items: center;
+  gap: .75rem;
+  padding: .12rem 0;
+  border-radius: 4px;
+  transition: opacity .12s;
+}
+.barras-fila:focus-visible { outline-offset: 2px; }
+.barras-atenuada { opacity: .45; }
+.barras-etiqueta { overflow: hidden; color: var(--ink); font-size: .88rem; text-overflow: ellipsis; white-space: nowrap; }
+.barras-pista {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+  border-left: 1px solid #c3cbd8;
+}
+.barras-barra { flex-shrink: 0; height: 18px; max-width: calc(100% - 5.5rem); border-radius: 0 4px 4px 0; }
+.barras-valor { color: var(--muted); font-size: .83rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.barras-tooltip { bottom: calc(100% + 4px); left: .5rem; }
+
+/* Columnas por día */
+.columnas { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .5rem; }
+.columnas-eje {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 200px;
+  color: var(--muted);
+  font-size: .76rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  transform: translateY(-.45em);
+}
+.columnas-area { position: relative; height: 200px; margin-bottom: 1.4rem; }
+.columnas-guia { position: absolute; right: 0; left: 0; height: 1px; background: #e8ecf2; }
+.columnas-base { background: #c3cbd8; }
+.columnas-grupos { position: absolute; inset: 0; display: flex; }
+.columnas-grupo { position: relative; display: flex; flex: 1; min-width: 0; flex-direction: column; justify-content: flex-end; border-radius: 3px; }
+.columnas-grupo-activo { background: #2a78d60f; }
+.columnas-grupo:focus-visible { outline-offset: 0; }
+.columnas-barras { display: flex; align-items: flex-end; justify-content: center; gap: 2px; height: 100%; padding-inline: 12%; }
+.columnas-barra { flex: 1; max-width: 24px; border-radius: 4px 4px 0 0; }
+.columnas-x {
+  position: absolute;
+  top: calc(100% + .35rem);
+  left: 0;
+  color: var(--muted);
+  font-size: .74rem;
+  white-space: nowrap;
+}
+.columnas-tooltip { top: 0; transform: translateX(-50%); }
+.columnas-tooltip[data-borde="inicio"] { transform: translateX(-10%); }
+.columnas-tooltip[data-borde="fin"] { transform: translateX(-90%); }
+
+/* Indicadores */
+.reporte-indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
+  gap: .75rem;
+  margin: 0;
+}
+.reporte-indicador {
+  display: grid;
+  align-content: start;
+  gap: .3rem;
+  padding: .9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.reporte-indicador dt { color: var(--muted); font-size: .86rem; font-weight: 600; }
+.reporte-indicador dd { margin: 0; font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 700; overflow-wrap: anywhere; }
+.indicador-peligro { border-left: 4px solid var(--danger); }
+.indicador-aviso { border-left: 4px solid #d29a2c; }
+
+@media (max-width: 540px) {
+  .barras-fila { grid-template-columns: 1fr; gap: .2rem; }
+  .barras-barra { max-width: calc(100% - 5rem); }
+}
