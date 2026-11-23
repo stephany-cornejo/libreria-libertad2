@@ -133,10 +133,34 @@ Si una salida supera el stock, la respuesta es `422`:
 | Ruta | Contenido |
 |---|---|
 | `GET /reportes/inventario` | Totales (productos, unidades, valor del inventario, agotados, stock bajo) y desglose por categoría |
-| `GET /reportes/movimientos?desde=&hasta=` | Movimientos, unidades e importe por concepto, y totales de entradas y salidas |
+| `GET /reportes/existencias?estado=&categoria_id=` | Existencias actuales por producto, con estado (`agotado`, `stock_bajo`, `disponible`) y valor. El filtro `estado` acepta `agotados`, `stock_bajo` o `disponibles` |
+| `GET /reportes/movimientos?desde=&hasta=` | Movimientos, unidades e importe por concepto; totales de entradas, salidas y variación neta; y `por_dia` con **todos** los días del periodo, incluidos los días sin movimientos |
 | `GET /reportes/ventas?desde=&hasta=&limite=` | Totales de ventas, evolución diaria y productos más vendidos |
+| `GET /reportes/rotacion?desde=&hasta=&limite=` | Productos de poca rotación: con existencias, ordenados de menos a más vendidos en el periodo (primero los que no tuvieron ventas). Incluye valor inmovilizado, última venta y días sin venta |
 
 Si no se indican fechas, el periodo son los últimos 30 días. El periodo máximo es de 366 días.
+
+Para el filtro "Registrado por" del historial, `GET /movimientos/usuarios` devuelve los usuarios que han registrado al menos un movimiento. Está disponible para todos los roles.
+
+### Zona horaria de los reportes
+
+Las fechas se guardan en UTC, que es la zona de la aplicación. Los filtros por día del historial y de los reportes interpretan cada día en la zona horaria del negocio:
+
+```dotenv
+INVENTARIO_ZONA_HORARIA=America/El_Salvador   # valor por defecto
+```
+
+Así, una venta registrada a las 8:30 p. m. cuenta en ese día local y no en el día siguiente, que sería su fecha en UTC. La agrupación por día usa `CONVERT_TZ` con desplazamientos numéricos (`+00:00` → `-06:00`), por lo que no hace falta cargar las tablas de zonas horarias de MySQL/MariaDB.
+
+## Frontend
+
+| Pantalla | Rol | Contenido |
+|---|---|---|
+| Proveedores | Administrador | Lista con búsqueda y filtro por estado, registro, edición y activación/desactivación con confirmación |
+| Movimientos | Todos | Registro de entradas y salidas con existencia visible, advertencia si no hay inventario suficiente y paso de confirmación; alertas de existencias mínimas; historial con filtros por fecha, producto, tipo, concepto, usuario y texto |
+| Reportes | Administrador | Pestañas de indicadores, existencias (todas, agotadas o con stock bajo), ventas y rotación, y movimientos por periodo. Incluye gráficos y exportación a PDF y Excel |
+
+La exportación se genera en el navegador con `jspdf`, `jspdf-autotable` y `exceljs`. Estas librerías se cargan solo al exportar, así que no aumentan la carga inicial. Cada reporte se describe una sola vez en `src/reportes/definiciones.js`, y la pantalla, el PDF y el Excel usan esa misma descripción. En el Excel, los números y las fechas se guardan como valores nativos (se pueden sumar y filtrar), con encabezado fijo, filtros y fila de totales.
 
 ## Consistencia del inventario
 
@@ -170,3 +194,13 @@ La suite `tests/Feature/Inventario` cubre:
 - Clasificación de alertas.
 - Cifras de los reportes.
 - Una simulación de 200 operaciones que verifica que el stock final coincide con el historial.
+- Los reportes de existencias, rotación y movimientos por día.
+- El conteo de días en la hora local del negocio.
+
+Pruebas del frontend (cálculos de reportes, validación de periodos y exportaciones a PDF y Excel), desde `frontend`:
+
+```powershell
+npm test
+```
+
+Estas pruebas no necesitan la base de datos. Cada Excel generado se vuelve a abrir para verificar sus celdas, formatos y totales, y en cada PDF se revisan las páginas, los textos y la numeración.
