@@ -45,6 +45,11 @@ class ProductoController extends Controller
                     return response()->json(['mensaje' => 'El producto aún tiene existencias.'], 409);
                 }
 
+                // El historial de inventario se conserva: un producto con movimientos no se elimina.
+                if ($actual->movimientos()->exists()) {
+                    return response()->json(['mensaje' => 'El producto tiene movimientos de inventario registrados.'], 409);
+                }
+
                 $actual->delete();
 
                 return response()->noContent();
